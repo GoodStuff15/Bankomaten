@@ -5,8 +5,10 @@
         static void Main(string[] args)
         {
             // Properties
+
             bool running = true;
             bool loggedin = false;
+            Console.Title = "Gustavs Bank-O-Matic";
 
             // Containers
 
@@ -25,13 +27,16 @@
 
             loggedin = LogIn(users, pincodes);
             Console.Clear();
+
             // if the login was correct, this while loop will run until we tell exit the program or log out.
 
             while (running && loggedin)
             {
                 Console.WriteLine("Logged in!");
                 Console.ReadKey();
-                // Plats för övriga metoder
+
+                MainMenu();
+
                 running = false;
             }
 
@@ -114,6 +119,49 @@
             }
 
             return false;
+        }
+
+        public static void MainMenu()
+        {
+
+            ConsoleKeyInfo cki;
+            bool menuOn = true;
+
+            while(menuOn)
+            {
+
+            Console.WriteLine("--- MENY ----\n");
+            
+            Console.WriteLine("1. Se dina konton och saldo");
+            Console.WriteLine("2. Överföring mellan konton");
+            Console.WriteLine("3. Ta ut pengar");
+            Console.WriteLine("4. Logga ut");
+            Console.WriteLine("\n Välj genom att trycka på motsvarande siffra på tangentbordet!");
+            cki = Console.ReadKey(true);
+
+            char choice = cki.KeyChar;
+
+            switch(choice)
+            {
+                case '1':
+                        // Se konto och saldo-funktion
+                    break;
+                case '2':
+                        // Överföringsfunktion
+                    break;
+                case '3':
+                        // Ta ut pengar-funktion
+                    break;
+                case '4':
+                        menuOn = false;
+                    break;
+                default:
+                    Console.WriteLine("\nThat menu item does not exist! Try again:\n");
+                    break;
+
+            }
+
+            }
         }
 
     }
