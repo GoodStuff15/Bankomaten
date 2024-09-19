@@ -12,11 +12,13 @@
 
             // Containers
 
-            string[] users = new string[] { "Göran", "Gunnar", "Gustav" };
-            int[] pincodes = new int[] { 123, 666, 420 };
+            string[] users = new string[] { "Göran", "Gunnar", "Gustav", "Glenn", "Garbodor" };
+            int[] pincodes = new int[] { 123, 666, 420, 808, 000 };
+
 
             // Welcome Greeting
-
+            while(running)
+            { 
             Console.WriteLine("Välkommen till Gustavs Bank-O-Matic!\n" +
                 "Klicka på valfri knapp för att logga in!");
             Console.ReadKey(true);
@@ -28,18 +30,20 @@
             loggedin = LogIn(users, pincodes);
             Console.Clear();
 
-            // if the login was correct, this while loop will run until we tell exit the program or log out.
+            // if the login was correct, this while loop will run until we log out.
 
-            while (running && loggedin)
+            while (loggedin)
             {
-                Console.WriteLine("Logged in!");
+                Console.WriteLine("Login successful!");
                 Console.ReadKey();
 
                 MainMenu();
 
-                running = false;
+                loggedin = false;
+                running = ExitProgram();
             }
 
+            }
             Console.WriteLine("Good bye :)");
             Console.ReadKey();
            
@@ -161,6 +165,37 @@
 
             }
 
+            }
+        }
+
+
+        public static bool ExitProgram()
+        {
+            ConsoleKeyInfo yn;
+
+            while (true)
+            {
+                Console.WriteLine("Do you want to exit the program? Press Y for yes or N for no:");
+
+            yn = Console.ReadKey(true);
+            char yOrN = yn.KeyChar;
+            yOrN = Char.ToUpper(yOrN);
+       
+            switch (yOrN)
+            {
+                case 'Y':
+                        Console.Clear();
+                        return false;
+                    
+                case 'N':
+                        Console.Clear();
+                        return true;
+                   
+                default:
+                    Console.WriteLine("Invalid button press, try again!");
+                        Console.Clear();
+                    break;
+            }
             }
         }
 
