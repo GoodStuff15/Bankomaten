@@ -2,18 +2,32 @@
 {
     internal class Program
     {
+        // Properties
+
+        static bool running = true;
+        static bool loggedin = false;
+
+        static int user1_ID = 0;
+        static int user2_ID = 1;
+        static int user3_ID = 2;
+        static int user4_ID = 3;
+        static int user5_ID = 4;
+
+        // Containers
+
+        static string[] users = new string[] { "Göran", "Gunnar", "Gustav", "Glenn", "Garbodor" };
+        static int[] pincodes = new int[] { 123, 666, 420, 808, 000 };
+
+        static int[] userAccountCount = new int[5] { 1, 2, 3, 4, 5 };
+
+        static double[][] userSaldos = new double[5][];
+
+
+
         static void Main(string[] args)
         {
-            // Properties
 
-            bool running = true;
-            bool loggedin = false;
             Console.Title = "Gustavs Bank-O-Matic";
-
-            // Containers
-
-            string[] users = new string[] { "Göran", "Gunnar", "Gustav", "Glenn", "Garbodor" };
-            int[] pincodes = new int[] { 123, 666, 420, 808, 000 };
 
 
             // Welcome Greeting
@@ -53,7 +67,7 @@
 
         }
 
-        public static bool LogIn(string[] users, int[] pins)
+        static bool LogIn(string[] users, int[] pins)
         {
             Console.WriteLine("Vänligen fyll i användarnamn och PIN för att logga in: ");
 
@@ -125,7 +139,7 @@
             return false;
         }
 
-        public static void MainMenu()
+        static void MainMenu()
         {
 
             ConsoleKeyInfo cki;
