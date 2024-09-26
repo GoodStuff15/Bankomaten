@@ -13,6 +13,8 @@
         static int user4_ID = 3;
         static int user5_ID = 4;
 
+        static string[] accountTypes = new string[] { "Lönekonto", "Sparkonto", "Investeringssparkonto", "Aktiekonto", "Magic the Gathering-konto" };
+
         // Containers
 
         static string[] users = new string[] { "Göran", "Gunnar", "Gustav", "Glenn", "Garbodor" };
@@ -20,7 +22,16 @@
 
         static int[] userAccountCount = new int[5] { 1, 2, 3, 4, 5 };
 
-        static double[][] userSaldos = new double[5][];
+        static double[][] userSaldos =
+            [
+
+            [0,0,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0],
+            [0,0,0,0,0]
+
+            ];
 
 
 
@@ -28,6 +39,9 @@
         {
 
             Console.Title = "Gustavs Bank-O-Matic";
+            GenerateAccounts();
+
+
 
 
             // Welcome Greeting
@@ -65,6 +79,36 @@
 
             
 
+        }
+
+        static void GenerateAccounts()
+        {
+
+            Random r = new Random();
+            for(int i = 0; i < users.Length; i++ )
+            {
+
+                for(int j = 0; j < userAccountCount[i]; j++)
+                {
+                    userSaldos[i][j] = (double)r.Next(1, 1000001);
+                }
+
+            }
+
+            // Displaying for testing
+
+/*            for (int i = 0; i < users.Length; i++)
+            {
+                Console.WriteLine($"User: {users[i]}");
+                Console.WriteLine($"Pin: {pincodes[i]}");
+                Console.WriteLine($"User accounts: {userAccountCount[i]}");
+
+                for (int j = 0; j < userAccountCount[i]; j++)
+                {
+                    Console.WriteLine($"Account: {accountTypes[j]} Money: {userSaldos[i][j]}");
+                }
+
+            }*/
         }
 
         static bool LogIn(string[] users, int[] pins)
@@ -183,7 +227,7 @@
         }
 
 
-        public static bool ExitProgram()
+        static bool ExitProgram()
         {
             ConsoleKeyInfo yn;
 
