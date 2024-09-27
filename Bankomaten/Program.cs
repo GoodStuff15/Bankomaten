@@ -1,4 +1,6 @@
-﻿namespace Bankomaten
+﻿using System.Globalization;
+
+namespace Bankomaten
 {
     internal class Program
     {
@@ -13,10 +15,13 @@
         static int user4_ID = 3;
         static int user5_ID = 4;
 
+        static int activeUserID;
+
         static string[] accountTypes = new string[] { "Lönekonto", "Sparkonto", "Investeringssparkonto", "Aktiekonto", "Magic the Gathering-konto" };
 
         // Containers
 
+        static int[] userIDs = new int[] { 0, 1, 2, 3, 4, 5 };
         static string[] users = new string[] { "Göran", "Gunnar", "Gustav", "Glenn", "Garbodor" };
         static int[] pincodes = new int[] { 123, 666, 420, 808, 000 };
 
@@ -111,6 +116,41 @@
             }*/
         }
 
+        static void ViewAccounts(int id)
+        {
+            Console.Clear();
+            ConsoleKeyInfo cki;
+            while(true)
+            {
+
+            
+            string divider = "-------------------------|--------------------";
+            Console.WriteLine("Dina konton:\n");
+            Console.WriteLine($"{"Konto", -25}|{"Saldo", 20}");
+            Console.WriteLine(divider);
+
+            for(int i = 0; i < userAccountCount[id]; i++)
+            {
+                Console.WriteLine($"{accountTypes[i], -25}|{userSaldos[id][i].ToString("C", CultureInfo.CurrentCulture),20}");
+                Console.WriteLine(divider);
+            }
+            Console.WriteLine("\n Klicka enter för att komma tillbaka till huvudmenyn!\n");
+                cki = Console.ReadKey(true);
+
+                if(cki.Key == ConsoleKey.Enter)
+                {
+                    break;
+                }
+                else
+                {
+                    Console.Clear();
+                    Console.WriteLine("\nDu måste trycka på enter brorsan! Prova igen!\n");
+                }
+            }
+
+
+        }
+
         static bool LogIn(string[] users, int[] pins)
         {
             Console.WriteLine("Vänligen fyll i användarnamn och PIN för att logga in: ");
@@ -160,6 +200,7 @@
                         if (Array.IndexOf(users, userName) == Array.IndexOf(pins, pinEntry))
                         {
                             pinCorrect = true;
+                            activeUserID = Array.IndexOf(users, userName); 
                             return true;
                         }
                         else
@@ -185,12 +226,13 @@
 
         static void MainMenu()
         {
-
+            
             ConsoleKeyInfo cki;
             bool menuOn = true;
 
             while(menuOn)
             {
+            Console.Clear();
 
             Console.WriteLine("--- MENY ----\n");
             
@@ -198,7 +240,8 @@
             Console.WriteLine("2. Överföring mellan konton");
             Console.WriteLine("3. Ta ut pengar");
             Console.WriteLine("4. Logga ut");
-            Console.WriteLine("\n Välj genom att trycka på motsvarande siffra på tangentbordet!");
+            Console.WriteLine("\n Gör ditt val genom att trycka på motsvarande siffra på tangentbordet!\n");
+
             cki = Console.ReadKey(true);
 
             char choice = cki.KeyChar;
@@ -206,7 +249,7 @@
             switch(choice)
             {
                 case '1':
-                        // Se konto och saldo-funktion
+                        ViewAccounts(activeUserID);
                     break;
                 case '2':
                         // Överföringsfunktion
