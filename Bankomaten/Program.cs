@@ -24,7 +24,6 @@ namespace Bankomaten
         static int[] userIDs = new int[] { 0, 1, 2, 3, 4, 5 };
         static string[] users = new string[] { "Göran", "Gunnar", "Gustav", "Glenn", "Garbodor" };
         static int[] pincodes = new int[] { 123, 666, 420, 808, 000 };
-
         static int[] userAccountCount = new int[5] { 1, 2, 3, 4, 5 };
 
         static double[][] userSaldos =
@@ -42,6 +41,7 @@ namespace Bankomaten
 
         static void Main(string[] args)
         {
+            // Setting up
 
             Console.Title = "Gustavs Bank-O-Matic";
             GenerateAccounts();
@@ -57,7 +57,7 @@ namespace Bankomaten
             Console.ReadKey(true);
             Console.Clear();
 
-            // Calling the Login method, which takes users and pincodes as arguments.
+            // Calling the Login function, which takes 'users' and 'pincodes' arrays as arguments.
             // It returns true if login is correct
 
             loggedin = LogIn(users, pincodes);
@@ -71,6 +71,11 @@ namespace Bankomaten
                 Console.ReadKey();
 
                 MainMenu();
+
+                    // if we choose to log out from the main menu,
+                    // loggedin status is set to false, and the program
+                    // asks if we want to exit. If we don't, we return
+                    // to the login screen.
 
                 loggedin = false;
                 running = ExitProgram();
@@ -86,6 +91,7 @@ namespace Bankomaten
 
         }
 
+        // Puts a random amount of money in the accounts the respective users have access to.
         static void GenerateAccounts()
         {
 
@@ -100,57 +106,179 @@ namespace Bankomaten
 
             }
 
-            // Displaying for testing
 
-/*            for (int i = 0; i < users.Length; i++)
-            {
-                Console.WriteLine($"User: {users[i]}");
-                Console.WriteLine($"Pin: {pincodes[i]}");
-                Console.WriteLine($"User accounts: {userAccountCount[i]}");
-
-                for (int j = 0; j < userAccountCount[i]; j++)
-                {
-                    Console.WriteLine($"Account: {accountTypes[j]} Money: {userSaldos[i][j]}");
-                }
-
-            }*/
         }
 
+        static void TransferFunds(int id)
+        {
+
+            // Properties used in this function
+
+            bool transfering = true;
+            int from;
+            int to;
+            int amount = 0;
+            ConsoleKeyInfo cki;
+
+            
+
+            while (transfering)
+            {
+                // Viewing accounts (useful for us short term memory-challenged)
+                AccountDisplay(id);
+
+                Console.WriteLine("\nVälj ett konto att föra över pengar ifrån (tryck på motsvarande siffra på tangentbordet): ");
+                cki = Console.ReadKey(true);
+                from = Convert.ToInt32(cki.KeyChar.ToString());
+
+                // Checks if the from account exists
+                // Restarts the function if not
+
+                if (userAccountCount[id] > from)
+                {
+                    Console.WriteLine($"Du valde {accountTypes[from]}\n");
+                    Console.WriteLine("Välj mottagarkonto: ");
+                    cki = Console.ReadKey(true);
+                    to = Convert.ToInt32(cki.KeyChar.ToString());
+
+                    // Checks if the 'to' account exists and is not the same as the 'from' account
+                    // Restarts the function if not
+
+                    if (userAccountCount[id] > to && to != from)
+                    {
+                        Console.WriteLine($"Du valde {accountTypes[to]}\n");
+                        Console.WriteLine("Skriv in summa: ");
+                        amount = int.Parse(Console.ReadLine());
+
+                        // Checks if there is enough money on the from account
+                        // Restarts the function if not
+
+                        if (amount > userSaldos[id][from])
+                        {
+                            Console.WriteLine("\nDet finns inte tillräckligt med pengar på kontot! ");
+
+                            Console.WriteLine("\n Klicka enter för att komma tillbaka till huvudmenyn,\n" +
+                                "eller på valfri knapp för att prova igen.");
+                            cki = Console.ReadKey(true);
+
+                            transfering = ReturnToMain(cki);
+                        }
+                        else
+                        {
+                            // Removes the amount from the sending account
+                            // Adds it to the recieving account
+                            // Then prints new saldos, and the amount removed/added
+
+                            userSaldos[id][from] -= amount;
+                            userSaldos[id][to] += amount;
+
+                            Console.WriteLine("\nNya saldon:");
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"{accountTypes[from]}: {userSaldos[id][from].ToString("C", CultureInfo.CurrentCulture)} (- {amount.ToString("C", CultureInfo.CurrentCulture)})");
+                            Console.ForegroundColor = ConsoleColor.DarkGreen;
+                            Console.WriteLine($"{accountTypes[to]}: {userSaldos[id][to].ToString("C", CultureInfo.CurrentCulture)} (+ {amount.ToString("C", CultureInfo.CurrentCulture)})");
+                            Console.ResetColor();
+
+                            Console.WriteLine("\n Klicka enter för att komma tillbaka till huvudmenyn,\n" +
+                                "eller valfri knapp för att göra en ny överföring.");
+                            cki = Console.ReadKey(true);
+
+                            transfering = ReturnToMain(cki);
+                            Console.Clear();
+
+                        }
+
+
+                    } // Prints a message and restarts if 'from' and 'to' account are the same
+                    else if(to == from)
+                    {
+                        Console.WriteLine("Till- och frånkonto kan inte vara samma! Försök igen!\n");
+
+                        Console.WriteLine("\n Klicka enter för att komma tillbaka till huvudmenyn,\n" +
+                        "eller på valfri knapp för att prova igen.");
+                        cki = Console.ReadKey(true);
+
+                        transfering = ReturnToMain(cki);
+                        Console.Clear();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Ogiltigt konto, försök igen!\n");
+
+                        Console.WriteLine("\n Klicka enter för att komma tillbaka till huvudmenyn,\n" +
+                        "eller på valfri knapp för att prova igen.");
+                        cki = Console.ReadKey(true);
+
+                        transfering = ReturnToMain(cki);
+                        Console.Clear();
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("Ogiltigt konto, försök igen!");
+                }
+
+
+
+                
+            }
+        }
+        
+        // Viewing Accounts "shell", putting the actual display in another method
+        // allows the program to show it in other methods without it asking to
+        // return to the main menu at inopportune times :) 
         static void ViewAccounts(int id)
         {
             Console.Clear();
             ConsoleKeyInfo cki;
-            while(true)
+            bool viewing = true;
+            while(viewing)
             {
+                AccountDisplay(id);
 
-            
-            string divider = "-------------------------|--------------------";
-            Console.WriteLine("Dina konton:\n");
-            Console.WriteLine($"{"Konto", -25}|{"Saldo", 20}");
-            Console.WriteLine(divider);
-
-            for(int i = 0; i < userAccountCount[id]; i++)
-            {
-                Console.WriteLine($"{accountTypes[i], -25}|{userSaldos[id][i].ToString("C", CultureInfo.CurrentCulture),20}");
-                Console.WriteLine(divider);
-            }
-            Console.WriteLine("\n Klicka enter för att komma tillbaka till huvudmenyn!\n");
+                Console.WriteLine("\n Klicka enter för att komma tillbaka till huvudmenyn!\n");
                 cki = Console.ReadKey(true);
 
-                if(cki.Key == ConsoleKey.Enter)
-                {
-                    break;
-                }
-                else
-                {
-                    Console.Clear();
-                    Console.WriteLine("\nDu måste trycka på enter brorsan! Prova igen!\n");
-                }
+                viewing = ReturnToMain(cki);
             }
-
 
         }
 
+        // The actual displaying of the accounts and information is in this method
+        // So it can be accessed from Transfer- and Withdrawal methods.
+        static void AccountDisplay(int id)
+        {
+
+            string divider = "   -------------------------|--------------------";
+            Console.WriteLine("Dina konton:\n");
+            Console.WriteLine($"{"   Konto",-25}{"Saldo",24}");
+            Console.WriteLine(divider);
+
+            for (int i = 0; i < userAccountCount[id]; i++)
+            {
+                Console.WriteLine($"{i}. {accountTypes[i],-25}|{userSaldos[id][i].ToString("C", CultureInfo.CurrentCulture),20}");
+                Console.WriteLine(divider);
+            }
+        }
+
+        // A method that returns true if the user wants to
+        // remain in the current section of the program.
+        // Returns true if they choose to return to main menu
+        static bool ReturnToMain(ConsoleKeyInfo click)
+        {
+            if (click.Key == ConsoleKey.Enter)
+            {
+                return false;
+            }
+            else
+            {
+                Console.Clear();
+                return true;
+            }
+        }
+
+        // Login function
         static bool LogIn(string[] users, int[] pins)
         {
             Console.WriteLine("Vänligen fyll i användarnamn och PIN för att logga in: ");
@@ -183,7 +311,7 @@ namespace Bankomaten
 
                     // User enters a pin code
                     // This while loops runs a number of times equal to number of max tries.
-                    // After that, the method returns false.
+                    // After that, the LogIn function returns false.
 
                     while (!pinCorrect && pinTries < maxPinTries)
                     {
@@ -194,6 +322,8 @@ namespace Bankomaten
                         // If statement checks if the pin entered matches the user name
                         // In this case by looking if they have the same index in their respective arrays
                         // If true, the method returns true and the user is logged in!
+                        // It then sets the activeUserID to the users ID, so we can find their
+                        // information in the container arrays.
                         // If false, pinTries is incremented, and the user is notified of
                         // the number of tries they have left.
 
@@ -224,6 +354,7 @@ namespace Bankomaten
             return false;
         }
 
+        // MainMenu function that loops while user is logged in.
         static void MainMenu()
         {
             
@@ -252,7 +383,7 @@ namespace Bankomaten
                         ViewAccounts(activeUserID);
                     break;
                 case '2':
-                        // Överföringsfunktion
+                        TransferFunds(activeUserID);
                     break;
                 case '3':
                         // Ta ut pengar-funktion
@@ -269,6 +400,8 @@ namespace Bankomaten
             }
         }
 
+        // Function that returns false if the user wants to exit the program,
+        // and vice versa.
 
         static bool ExitProgram()
         {
