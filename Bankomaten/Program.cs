@@ -4,6 +4,9 @@ namespace Bankomaten
 {
     internal class Program
     {
+
+        
+
         // Properties
 
         static bool running = true;
@@ -42,12 +45,8 @@ namespace Bankomaten
         static void Main(string[] args)
         {
             // Setting up
-
             Console.Title = "Gustavs Bank-O-Matic";
             GenerateAccounts();
-
-
-
 
             // Welcome Greeting
             while(running)
@@ -59,7 +58,6 @@ namespace Bankomaten
 
             // Calling the Login function, which takes 'users' and 'pincodes' arrays as arguments.
             // It returns true if login is correct
-
             loggedin = LogIn(users, pincodes);
             Console.Clear();
 
@@ -109,6 +107,64 @@ namespace Bankomaten
 
         }
 
+        static void WithdrawFunds(int id)
+        {
+            bool withdrawing = true;
+            int from;
+            int amount = 0;
+            ConsoleKeyInfo cki;
+
+
+            while(withdrawing)
+            {
+                AccountDisplay(id);
+                Console.WriteLine("\nVälj ett konto att ta ut pengar ifrån (tryck på motsvarande siffra på tangentbordet): ");
+                cki = Console.ReadKey(true);
+                from = Convert.ToInt32(cki.KeyChar.ToString());
+
+                if (userAccountCount[id] > from)
+                {
+                    Console.WriteLine($"Du valde {accountTypes[from]}\n");
+                    Console.WriteLine("Skriv in summa: ");
+                    amount = int.Parse(Console.ReadLine());
+
+                    if (amount > userSaldos[id][from])
+                    {
+                        Console.WriteLine("\nDet finns inte tillräckligt med pengar på kontot! ");
+
+                        Console.WriteLine("\n Klicka enter för att komma tillbaka till huvudmenyn,\n" +
+                            "eller på valfri knapp för att prova igen.");
+
+                        cki = Console.ReadKey(true);
+
+                        withdrawing = ReturnToMain(cki);
+                    }
+                    else
+                    {
+                        // Removes the amount from the sending account
+                        // Then prints new balance, and the amount withdrawn
+
+                        userSaldos[id][from] -= amount;
+
+                        Console.WriteLine($"Nytt saldo på {accountTypes[from]}: {userSaldos[id][from].ToString("C", CultureInfo.CurrentCulture)}");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.WriteLine($"Ditt uttag: {amount.ToString("C", CultureInfo.CurrentCulture)}");
+                        Console.ResetColor();
+
+                        Console.WriteLine("\n Klicka enter för att komma tillbaka till huvudmenyn,\n" +
+                            "eller valfri knapp för att göra ett nytt uttag.");
+                        cki = Console.ReadKey(true);
+
+                        withdrawing = ReturnToMain(cki);
+                        
+
+                    }
+
+
+                }
+
+            }
+        }
         static void TransferFunds(int id)
         {
 
@@ -386,7 +442,7 @@ namespace Bankomaten
                         TransferFunds(activeUserID);
                     break;
                 case '3':
-                        // Ta ut pengar-funktion
+                        WithdrawFunds(activeUserID);
                     break;
                 case '4':
                         menuOn = false;
