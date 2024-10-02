@@ -4,22 +4,15 @@ namespace Bankomaten
 {
     internal class Program
     {
-
-
-
         // Properties
-
         static bool running = true;
         static bool loggedin = false;
         static bool failedLogIn = false;
-
-
         static int activeUserID;
 
         static string[] accountTypes = new string[] { "Lönekonto", "Sparkonto", "Investeringssparkonto", "Aktiekonto", "Magic the Gathering-konto" };
 
         // Containers
-
         static int[] userIDs = new int[] { 0, 1, 2, 3, 4, 5 };
         static string[] users = new string[] { "Göran", "Gunnar", "Gustav", "Glenn", "Garbodor" };
         static int[] pincodes = new int[] { 123, 666, 420, 808, 000 };
@@ -27,16 +20,12 @@ namespace Bankomaten
 
         static double[][] userSaldos =
             [
-
-            [0,0,0,0,0],
-            [0,0,0,0,0],
-            [0,0,0,0,0],
-            [0,0,0,0,0],
-            [0,0,0,0,0]
-
+                [0,0,0,0,0],
+                [0,0,0,0,0],
+                [0,0,0,0,0],
+                [0,0,0,0,0],
+                [0,0,0,0,0]
             ];
-
-
 
         static void Main(string[] args)
         {
@@ -44,33 +33,38 @@ namespace Bankomaten
             Console.Title = "Gustavs Bank-O-Matic";
             GenerateAccounts();
 
+            // Testing Space
+
+
             // Welcome Greeting
             while (running)
             {
-                Console.WriteLine("Välkommen till Gustavs Bank-O-Matic!\n" +
-                    "Klicka på valfri knapp för att logga in!");
-                Console.ReadKey(true);
-                Console.Clear();
+
 
                 // Calling the Login function, which takes 'users' and 'pincodes' arrays as arguments.
                 // It returns true if login is correct
                 if (failedLogIn)
                 {
                     Console.WriteLine("Du måste starta om programmet för att försöka logga in igen!\n");
+                    Console.WriteLine("Tryck på valfri knapp för att avsluta.");
+                    Console.ReadKey();
+                    running = false;
                 }
                 else
                 {
+                    Console.WriteLine("Välkommen till Gustavs Bank-O-Matic!\n" +
+                    "Klicka på valfri knapp för att logga in!");
+                    Console.ReadKey(true);
+                    Console.Clear();
 
                     loggedin = LogIn(users, pincodes);
                     Console.Clear();
                 }
 
                 // if the login was correct, this while loop will run until we log out.
-
                 while (loggedin)
                 {
-                    Console.WriteLine("Login successful!\n");
-
+                    Console.WriteLine("Login lyckades!\n");
 
                     MainMenu();
 
@@ -78,19 +72,12 @@ namespace Bankomaten
                     // loggedin status is set to false, and the program
                     // asks if we want to exit. If we don't, we return
                     // to the login screen.
-
                     loggedin = false;
                     running = ExitProgram();
                 }
 
             }
-            Console.WriteLine("Thank you for contributing to our record-breaking profits!");
-            Console.ReadKey();
-
-
-
-
-
+            Console.WriteLine("Tack för ditt bidrag till våra aktieägare!");            
         }
 
         // Puts a random amount of money in the accounts the respective users have access to.
@@ -100,15 +87,11 @@ namespace Bankomaten
             Random r = new Random();
             for (int i = 0; i < users.Length; i++)
             {
-
                 for (int j = 0; j < userAccountCount[i]; j++)
                 {
                     userSaldos[i][j] = (double)r.Next(1, 1000001);
                 }
-
             }
-
-
         }
 
         static void WithdrawFunds(int id)
@@ -128,12 +111,14 @@ namespace Bankomaten
                 {
                     Console.WriteLine($"Du valde {accountTypes[from]}\n");
                     Console.WriteLine("Skriv in summa: ");
-                    amount = NumberInput();
+                    amount = NumberInput(true);
 
                     if (amount > userSaldos[id][from])
                     {
+                        Console.Beep();
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("\nDet finns inte tillräckligt med pengar på kontot! ");
-
+                        Console.ResetColor();
                         withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
                     }
                     else
@@ -186,7 +171,7 @@ namespace Bankomaten
                     {
                         Console.WriteLine($"Du valde {accountTypes[to]}\n");
                         Console.WriteLine("Skriv in summa: ");
-                        amount = NumberInput();
+                        amount = NumberInput(true);
 
                         // Checks if there is enough money on the from account
                         // Restarts the function if not
@@ -331,7 +316,7 @@ namespace Bankomaten
                     {
 
                         Console.WriteLine("PIN-kod: ");
-                        pinEntry = (int)NumberInput();
+                        pinEntry = (int)NumberInput(false);
 
                         // If statement checks if the pin entered matches the user name
                         // In this case by looking if they have the same index in their respective arrays
@@ -400,7 +385,7 @@ namespace Bankomaten
                         ViewAccounts(activeUserID);
                         break;
                     case '2':
-                        TransferFunds(activeUserID);
+                        TransferFundsUpdate(activeUserID);
                         break;
                     case '3':
                         WithdrawFunds(activeUserID);
@@ -425,7 +410,7 @@ namespace Bankomaten
 
             while (true)
             {
-                Console.WriteLine("Do you want to exit the program? Press Y for yes or N for no:");
+                Console.WriteLine("Vill du avsluta programmet? Tryck Y för ja eller N om du vill logga in igen:");
 
                 yn = Console.ReadKey(true);
 
@@ -440,7 +425,7 @@ namespace Bankomaten
                         return true;
 
                     default:
-                        Console.WriteLine("Invalid button press, try again!");
+                        Console.WriteLine("Ogiltigt val, prova med Y eller N!");
                         Console.Clear();
                         break;
                 }
@@ -448,12 +433,15 @@ namespace Bankomaten
         }
 
         // A function that takes input from user, makes sure its in number form,
-        // and then returns it.
-        static double NumberInput()
+        // and then returns it. Takes a bool as argument to determine whether to
+        // return in currency form (double including ören) or regular number form.
+        static double NumberInput(bool money)
         {
             bool isNumber = false;
+           
             string numberString = "";
             double number;
+            
             ConsoleKeyInfo cki;
 
             do
@@ -463,12 +451,25 @@ namespace Bankomaten
 
                 if (cki.Key != ConsoleKey.Backspace)
                 {
-                    if (isNumber) //if it is a number, adds it to a string (and shows it to the console)
+                    if (isNumber) //if it is a number, adds to string of numbers 
                     {
+                        // Makes sure user can only type two digits after entering a comma
+                        if(numberString.Contains(",") && numberString.IndexOf(",") < numberString.Length -2)
+                        {
+                        }
+                        else
+                        {
+                        numberString += cki.KeyChar;
+                        Console.Write(cki.KeyChar);
+                        }
+                    }
+                    else if(money && !numberString.Contains(",") && cki.Key == ConsoleKey.OemComma)
+                    { // if key pressed is comma and there is no comma in string, adds a comma.
                         numberString += cki.KeyChar;
                         Console.Write(cki.KeyChar);
                     }
-                } // Backspace key delete numbers from the string
+                    
+                } // Backspace key delete characters from the string
                 else if (cki.Key == ConsoleKey.Backspace && numberString.Length > 0)
                 {
                     numberString = numberString.Substring(0, (numberString.Length - 1));
@@ -478,8 +479,11 @@ namespace Bankomaten
             } while (cki.Key != ConsoleKey.Enter || numberString.Length == 0);
 
             Console.WriteLine();
-            number = Convert.ToDouble(numberString); // The string is converted to double and returned.
 
+            // The string is converted to double and returned.
+            // CurrentCulture used to make sure Ören are represented correctly.
+            double.TryParse(numberString, CultureInfo.CurrentCulture, out number);
+           
             return number;
         }
 
@@ -506,6 +510,59 @@ namespace Bankomaten
             } while (!isNumber || num > max); // exits while loop only if number is not bigger
                                               // than the max index of the active users accounts.
             return num;
+        }
+
+        static void TransferFundsUpdate(int id)
+        {
+            int from;
+            int to;
+            double amount;
+            bool transfering = true;
+
+            while (transfering)
+            {
+                AccountDisplay(id);
+
+                Console.WriteLine("Skriv in från-konto: ");
+                from = Choice(id);
+                Console.WriteLine($"Från: {accountTypes[from]}. Skriv in till-konto:");
+                to = Choice(id);
+
+                if (from == to)
+                {
+                    Console.Beep();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\nFrån- och Till- konto kan inte vara samma!\n");
+                    Console.ResetColor();
+                    transfering = ReturnToMain("Tryck på valfri annan knapp för att prova igen!");
+                }
+                else
+                {
+                    Console.WriteLine($"Till: {accountTypes[to]}. Skriv in summa som ska överföras:");
+                    amount = NumberInput(true);
+
+                    if (amount > userSaldos[id][from])
+                    {
+                        Console.Beep();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"\nDet finns inte tillräckligt saldo på {accountTypes[from]}!\n");
+                        Console.ResetColor();
+                        transfering = ReturnToMain("Tryck på valfri annan knapp för att prova igen!");
+                    }
+                    else
+                    {
+
+                        userSaldos[id][from] -= amount;
+                        userSaldos[id][to] += amount;
+
+                        Console.WriteLine($"{accountTypes[from]}: {userSaldos[id][from].ToString("C", CultureInfo.CurrentCulture)} (-{amount.ToString("C", CultureInfo.CurrentCulture)})");
+                        Console.WriteLine($"{accountTypes[to]}: {userSaldos[id][to].ToString("C", CultureInfo.CurrentCulture)} (+{amount.ToString("C", CultureInfo.CurrentCulture)})\n");
+
+                        transfering = ReturnToMain("Tryck på valfri annan knapp för att göra en ny överföring.");
+                        Console.ReadKey();
+                    }
+                }
+            }
         }
 
     }
