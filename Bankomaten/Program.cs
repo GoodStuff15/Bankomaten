@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿// Gustav Eriksson Söderlund, SUT24
+
+using System.Globalization; // To make CultureInfo work
 
 namespace Bankomaten
 {
@@ -16,16 +18,9 @@ namespace Bankomaten
         static int[] userIDs = new int[] { 0, 1, 2, 3, 4, 5 };
         static string[] users = new string[] { "Göran", "Gunnar", "Gustav", "Glenn", "Garbodor" };
         static int[] pincodes = new int[] { 123, 666, 420, 808, 000 };
-        static int[] userAccountCount = new int[5] { 1, 2, 3, 4, 5 };
+        static int[] userAccountCount = new int[] { 1, 2, 3, 4, 5 };
 
-        static double[][] userSaldos =
-            [
-                [0,0,0,0,0],
-                [0,0,0,0,0],
-                [0,0,0,0,0],
-                [0,0,0,0,0],
-                [0,0,0,0,0]
-            ];
+        static double[][] userSaldos = new double[users.Length][];
 
         static void Main(string[] args)
         {
@@ -33,14 +28,9 @@ namespace Bankomaten
             Console.Title = "Gustavs Bank-O-Matic";
             GenerateAccounts();
 
-            // Testing Space
-
-
             // Welcome Greeting
             while (running)
             {
-
-
                 // Calling the Login function, which takes 'users' and 'pincodes' arrays as arguments.
                 // It returns true if login is correct
                 if (failedLogIn)
@@ -83,14 +73,17 @@ namespace Bankomaten
         // Puts a random amount of money in the accounts the respective users have access to.
         static void GenerateAccounts()
         {
-
             Random r = new Random();
             for (int i = 0; i < users.Length; i++)
             {
+                double[] temp = new double[users.Length];
+
                 for (int j = 0; j < userAccountCount[i]; j++)
                 {
-                    userSaldos[i][j] = (double)r.Next(1, 1000001);
+                    temp[j] = (double)r.Next(1, 1000001);
                 }
+
+                userSaldos[i] = temp;
             }
         }
 
@@ -138,7 +131,6 @@ namespace Bankomaten
                 }
             }
         }
-
 
         // Viewing Accounts "shell", putting the actual display in another method
         // allows the program to show it in other methods without it asking to
@@ -278,7 +270,6 @@ namespace Bankomaten
                 Console.Clear();
 
                 Console.WriteLine("--- MENY ----\n");
-
                 Console.WriteLine("1. Se dina konton och saldo");
                 Console.WriteLine("2. Överföring mellan konton");
                 Console.WriteLine("3. Ta ut pengar");
@@ -365,6 +356,7 @@ namespace Bankomaten
                         // Makes sure user can only type two digits after entering a comma
                         if (numberString.Contains(",") && numberString.IndexOf(",") < numberString.Length - 2)
                         {
+                            // do nothing
                         }
                         else
                         {
@@ -459,7 +451,6 @@ namespace Bankomaten
                     }
                     else
                     {
-
                         userSaldos[id][from] -= amount;
                         userSaldos[id][to] += amount;
 
@@ -472,6 +463,5 @@ namespace Bankomaten
                 }
             }
         }
-
     }
 }
