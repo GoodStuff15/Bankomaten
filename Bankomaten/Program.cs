@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿// Gustav Eriksson Söderlund, SUT24
+
+using System.Globalization; // To make CultureInfo work
 
 namespace Bankomaten
 {
@@ -16,16 +18,9 @@ namespace Bankomaten
         static int[] userIDs = new int[] { 0, 1, 2, 3, 4, 5 };
         static string[] users = new string[] { "Göran", "Gunnar", "Gustav", "Glenn", "Garbodor" };
         static int[] pincodes = new int[] { 123, 666, 420, 808, 000 };
-        static int[] userAccountCount = new int[5] { 1, 2, 3, 4, 5 };
+        static int[] userAccountCount = new int[] { 1, 2, 3, 4, 5 };
 
-        static double[][] userSaldos =
-            [
-                [0,0,0,0,0],
-                [0,0,0,0,0],
-                [0,0,0,0,0],
-                [0,0,0,0,0],
-                [0,0,0,0,0]
-            ];
+        static double[][] userSaldos = new double[users.Length][];
 
         static void Main(string[] args)
         {
@@ -81,10 +76,14 @@ namespace Bankomaten
             Random r = new Random();
             for (int i = 0; i < users.Length; i++)
             {
+                double[] temp = new double[users.Length];
+
                 for (int j = 0; j < userAccountCount[i]; j++)
                 {
-                    userSaldos[i][j] = (double)r.Next(1, 1000001);
+                    temp[j] = (double)r.Next(1, 1000001);
                 }
+
+                userSaldos[i] = temp;
             }
         }
 
