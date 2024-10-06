@@ -28,6 +28,10 @@ namespace Bankomaten
             Console.Title = "Gustavs Bank-O-Matic";
             GenerateAccounts();
 
+            // Testing
+
+            PrintMoney('£');
+
             // Welcome Greeting
             while (running)
             {
@@ -76,14 +80,125 @@ namespace Bankomaten
             Random r = new Random();
             for (int i = 0; i < users.Length; i++)
             {
-                double[] temp = new double[users.Length];
-
-                for (int j = 0; j < userAccountCount[i]; j++)
+                if(!File.Exists($"user{userIDs[i]}.txt"))
                 {
+
+                    double[] temp = new double[users.Length];
+                    File.Create($"user{userIDs[i]}.txt");
+
+                    for (int j = 0; j < userAccountCount[i]; j++)
+                    {
                     temp[j] = (double)r.Next(1, 1000001);
-                }
+                    }
 
                 userSaldos[i] = temp;
+                }
+            }
+        }
+        // TEST NEDAN
+        static void PrintMoney(char v)
+        {
+            string[][] dollabill =
+                [
+                ["_", "___", "___", "___", "___", "___", "_"],
+                ["|", $"50{v}", "   ", "   ", "uuu", "   ", "|"],
+                ["|", "   ", "   ", "  (", "o-o", ")  ", "|"],
+                ["|", "   ", "   ", "  |", "'-'", "|  ", "|"],
+                ["|", "___", "___", "___", "___", "___", "|"],
+                ];
+
+            string[][] printed = new string[5][];
+            string[] emptyRow = [" ", " ", " ", " ", " ", " ", " "];
+
+            int max = 4;
+            int printCheck = 0;
+
+            for (int i = 0; i < 5; i++)
+            {
+                printed[i] = emptyRow;
+            }
+
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+         
+            for (int i = 0; i < 5 && i >= 0; i++)
+                {
+                    printed[0] = dollabill[max];
+
+                    for (int j = 0; j < 7; j++)
+                    {
+                    Console.Write($"{printed[0][j]}");
+                    }
+                Console.WriteLine();
+                for (int j = 0; j < 7; j++)
+                     {
+                    Console.Write($"{printed[1][j]}");
+                     }
+                Console.WriteLine();
+                for (int j = 0; j < 7; j++)
+                    {
+                    Console.Write($"{printed[2][j]}");
+                    }
+                Console.WriteLine();
+                for (int j = 0; j < 7; j++)
+                    {
+                    Console.Write($"{printed[3][j]}");
+                    }
+                Console.WriteLine();
+                for (int j = 0; j < 7; j++)
+                    {
+                    Console.Write($"{printed[4][j]}");
+                    }
+                Console.WriteLine();
+                Thread.Sleep(1000);
+                Console.Clear();
+
+                if (printCheck >= 3)
+                {
+
+                    printed[4] = printed[3];
+                    printed[3] = emptyRow;
+                }
+                if (printCheck >= 2)
+                {
+
+                    printed[3] = printed[2];
+                    printed[2] = emptyRow;
+                }
+                if (printCheck >= 1)
+                {
+
+                    printed[2] = printed[1];
+                    printed[1] = emptyRow;
+                }
+                if (printCheck >= 0)
+                { 
+                printed[1] = printed[0];
+                printed[0] = emptyRow;
+                }
+
+                if (max > 0)
+                {
+                    max--;
+                }
+
+                printCheck++;
+            }
+
+            Console.ResetColor();
+            
+            Console.ReadLine();
+        }
+
+        static void SaveAccountInfo()
+        {
+            for (int i = 0; i < users.Length; i++)
+            {
+
+                string name = $"Username: {users[i]}";
+                string pin = $"PIN: {pincodes[i]}";
+                string money = String.Concat(userSaldos[i]);
+
+                File.AppendAllText($"user{userIDs[i]}.txt", $"{name}\n{pin}\n");
             }
         }
 
@@ -111,6 +226,14 @@ namespace Bankomaten
                         Console.Beep();
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("\nDet finns inte tillräckligt med pengar på kontot! ");
+                        Console.ResetColor();
+                        withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
+                    }
+                    else if (userSaldos[id][from] == 0)
+                    {
+                        Console.Beep();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\nKontot är tomt! ");
                         Console.ResetColor();
                         withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
                     }
@@ -446,6 +569,14 @@ namespace Bankomaten
                         Console.Beep();
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine($"\nDet finns inte tillräckligt saldo på {accountTypes[from]}!\n");
+                        Console.ResetColor();
+                        transfering = ReturnToMain("Tryck på valfri annan knapp för att prova igen!");
+                    }
+                    else if(amount == 0)
+                    {
+                        Console.Beep();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"\nDu kan inte föra över 0 kr! \n");
                         Console.ResetColor();
                         transfering = ReturnToMain("Tryck på valfri annan knapp för att prova igen!");
                     }
