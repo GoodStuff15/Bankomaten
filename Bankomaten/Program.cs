@@ -202,6 +202,31 @@ namespace Bankomaten
             }
         }
 
+        static string[] ExpandStringArray(string[] arr, string nm)
+        {
+
+            string[] temp = new string[arr.Length + 1];
+
+            arr.CopyTo(temp, 0);
+
+            temp[arr.Length + 1] = nm;
+
+            return temp;
+        }
+
+        static int[] ExpandIntArray(string[] arr, int nm)
+        {
+
+            int[] temp = new int[arr.Length + 1];
+
+            arr.CopyTo(temp, 0);
+
+            temp[arr.Length + 1] = nm;
+
+            return temp;
+        }
+
+        // TEST SLUT
         static void WithdrawFunds(int id)
         {
             bool withdrawing = true;
