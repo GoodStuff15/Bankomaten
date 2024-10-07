@@ -40,7 +40,7 @@ namespace Bankomaten
                     Console.ReadKey();
                     running = false;
                 }
-                else
+                else if(!loggedin)
                 {
                     Console.WriteLine("Välkommen till Gustavs Bank-O-Matic!\n" +
                     "Klicka på valfri knapp för att logga in!");
@@ -50,12 +50,8 @@ namespace Bankomaten
                     loggedin = LogIn(users, pincodes);
                     Console.Clear();
                 }
-
-                // if the login was correct, this while loop will run until we log out.
-                while (loggedin)
+                else
                 {
-                    Console.WriteLine("Login lyckades!\n");
-
                     MainMenu();
 
                     // if we choose to log out from the main menu,
@@ -65,7 +61,6 @@ namespace Bankomaten
                     loggedin = false;
                     running = ExitProgram();
                 }
-
             }
             Console.WriteLine("Tack för ditt bidrag till våra aktieägare!");
         }
