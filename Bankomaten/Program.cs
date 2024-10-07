@@ -1,6 +1,8 @@
 ﻿// Gustav Eriksson Söderlund, SUT24
 
-using System.Globalization; // To make CultureInfo work
+using System.Globalization;
+using System.Media; 
+
 
 namespace Bankomaten
 {
@@ -11,8 +13,10 @@ namespace Bankomaten
         static bool loggedin = false;
         static bool failedLogIn = false;
         static int activeUserID;
-
+        static SoundPlayer cash = new SoundPlayer();
+        
         static string[] accountTypes = new string[] { "Lönekonto", "Sparkonto", "Investeringssparkonto", "Aktiekonto", "Magic the Gathering-konto" };
+        static string[] accountNames = accountTypes;
 
         // Containers
         static int[] userIDs = new int[] { 0, 1, 2, 3, 4, 5 };
@@ -27,6 +31,11 @@ namespace Bankomaten
             // Setting up
             Console.Title = "Gustavs Bank-O-Matic";
             GenerateAccounts();
+
+            // Testing
+
+            Console.ReadKey();
+            //PrintMoney('£');
 
             // Welcome Greeting
             while (running)
@@ -71,17 +80,196 @@ namespace Bankomaten
             Random r = new Random();
             for (int i = 0; i < users.Length; i++)
             {
-                double[] temp = new double[users.Length];
 
-                for (int j = 0; j < userAccountCount[i]; j++)
-                {
+                    double[] temp = new double[users.Length];
+
+                    for (int j = 0; j < userAccountCount[i]; j++)
+                    {
                     temp[j] = (double)r.Next(1, 1000001);
-                }
+                    }
 
                 userSaldos[i] = temp;
             }
         }
+        // TEST NEDAN
+        static void PrintMoney(char v)
+        {
+            cash.SoundLocation = "cash.wav";
+            string[][] dollabill =
+                [
+                ["_", "___", "___", "___", "___", "___", "_"],
+                ["|", $"50{v}", "   ", "   ", "uuu", "   ", "|"],
+                ["|", "   ", "   ", "  (", "o-o", ")  ", "|"],
+                ["|", "   ", "   ", "  |", "'-'", "|  ", "|"],
+                ["|", "___", "___", "___", "___", "___", "|"],
+                ];
 
+            string[][] printed = new string[5][];
+            string[] emptyRow = [" ", " ", " ", " ", " ", " ", " "];
+
+            int max = 4;
+            int printCheck = 0;
+
+            for (int i = 0; i < 5; i++)
+            {
+                printed[i] = emptyRow;
+            }
+            
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+         
+            for (int i = 0; i < 5 && i >= 0; i++)
+                {
+                printed[0] = dollabill[max];
+
+                    for (int j = 0; j < 7; j++)
+                    {
+                    Console.Write($"{printed[0][j]}");
+                    }
+                Console.WriteLine();
+                for (int j = 0; j < 7; j++)
+                     {
+                    Console.Write($"{printed[1][j]}");
+                     }
+                Console.WriteLine();
+                for (int j = 0; j < 7; j++)
+                    {
+                    Console.Write($"{printed[2][j]}");
+                    }
+                Console.WriteLine();
+                for (int j = 0; j < 7; j++)
+                    {
+                    Console.Write($"{printed[3][j]}");
+                    }
+                Console.WriteLine();
+                for (int j = 0; j < 7; j++)
+                    {
+                    Console.Write($"{printed[4][j]}");
+                    }
+                Console.WriteLine();
+                Thread.Sleep(1000);
+                cash.Play();
+                Console.Clear();
+
+                if (printCheck >= 3)
+                {
+                    printed[4] = printed[3];
+                    printed[3] = emptyRow;
+                }
+                if (printCheck >= 2)
+                {
+                    printed[3] = printed[2];
+                    printed[2] = emptyRow;
+                }
+                if (printCheck >= 1)
+                {
+                    printed[2] = printed[1];
+                    printed[1] = emptyRow;
+                }
+                if (printCheck >= 0)
+                { 
+                printed[1] = printed[0];
+                printed[0] = emptyRow;
+                }
+
+                if (max > 0)
+                {
+                    max--;
+                }
+
+                printCheck++;
+            }
+
+            Console.ResetColor();
+            Thread.Sleep(1500);
+        }
+         
+        static void SaveAccountInfo()
+        {
+            for (int i = 0; i < users.Length; i++)
+            {
+
+                string name = $"Username: {users[i]}";
+                string pin = $"PIN: {pincodes[i]}";
+                string money = String.Concat(userSaldos[i]);
+
+                File.AppendAllText($"user{userIDs[i]}.txt", $"{name}\n{pin}\n");
+            }
+        }
+
+        static void CreateNewAccount(int id)
+        {
+            bool creating = true;
+            while(creating)
+            {
+
+            Console.WriteLine("Välj kontotyp i listan:");
+            for(int i = 0; i < accountTypes.Length; i++)
+            {
+                Console.WriteLine($"{i}. {accountTypes[i]}");
+            }
+
+            int choice = Choice(id, accountTypes.Length - 1);
+            string newName = accountTypes[choice];
+
+            if (userAccountCount[id] > accountNames.Length)
+            {
+                userSaldos[id] = ExpandDoubleArray(userSaldos[id], 0);
+            }
+            if (userAccountCount[id] >= accountNames.Length)
+            {
+                accountNames = ExpandStringArray(accountNames, newName);
+            }
+            else if (userAccountCount[id] < accountNames.Length)
+            {
+                accountNames[userAccountCount[id]] = newName;   
+                
+            }
+            
+            double[] temp = new double[userSaldos[id].Length+1];
+            userSaldos[id].CopyTo(temp, 0);
+            temp[userSaldos[id].Length] = 0;
+            userSaldos[id] = temp;
+            userAccountCount[id]++;
+            creating = ReturnToMain("Tryck på valfri annan knapp för att skapa ytterligare konton.");
+
+            Console.Clear();
+            }
+        }
+
+        static string[] ExpandStringArray(string[] arr, string add)
+        {
+            string[] temp = new string[arr.Length + 1];
+
+            arr.CopyTo(temp, 0);
+
+            temp[arr.Length] = add;
+
+            return temp;
+        }
+
+        static int[] ExpandIntArray(int[] arr, int add)
+        {
+            int[] temp = new int[arr.Length + 1];
+
+            arr.CopyTo(temp, 0);
+
+            temp[arr.Length + 1] = add;
+
+            return temp;
+        }
+
+        static double[] ExpandDoubleArray(double[] arr, double add)
+        {
+            double[] temp = new double[arr.Length + 1];
+
+            arr.CopyTo(temp, 0);
+
+            temp[arr.Length] = add;
+
+            return temp;
+        }
+
+        // TEST SLUT
         static void WithdrawFunds(int id)
         {
             bool withdrawing = true;
@@ -93,11 +281,11 @@ namespace Bankomaten
                 AccountDisplay(id);
                 Console.WriteLine("\nVälj ett konto att ta ut pengar ifrån (tryck på motsvarande siffra på tangentbordet): ");
 
-                from = Choice(id);
+                from = Choice(id, userAccountCount[id] - 1);
 
                 if (userAccountCount[id] > from)
                 {
-                    Console.WriteLine($"Du valde {accountTypes[from]}\n");
+                    Console.WriteLine($"Du valde {accountNames[from]}\n");
                     Console.WriteLine("Skriv in summa: ");
                     amount = NumberInput(true);
 
@@ -109,6 +297,14 @@ namespace Bankomaten
                         Console.ResetColor();
                         withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
                     }
+                    else if (userSaldos[id][from] == 0)
+                    {
+                        Console.Beep();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\nKontot är tomt! ");
+                        Console.ResetColor();
+                        withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
+                    }
                     else
                     {
                         // Removes the amount from the sending account
@@ -116,7 +312,7 @@ namespace Bankomaten
 
                         userSaldos[id][from] -= amount;
 
-                        Console.WriteLine($"Nytt saldo på {accountTypes[from]}: {userSaldos[id][from].ToString("C", CultureInfo.CurrentCulture)}");
+                        Console.WriteLine($"Nytt saldo på {accountNames[from]}: {userSaldos[id][from].ToString("C", CultureInfo.CurrentCulture)}");
                         Console.ForegroundColor = ConsoleColor.DarkGreen;
                         Console.WriteLine($"Ditt uttag: {amount.ToString("C", CultureInfo.CurrentCulture)}");
                         Console.ResetColor();
@@ -153,7 +349,7 @@ namespace Bankomaten
 
             for (int i = 0; i < userAccountCount[id]; i++)
             {
-                Console.WriteLine($"{i}. {accountTypes[i],-25}|{userSaldos[id][i].ToString("C", CultureInfo.CurrentCulture),20}");
+                Console.WriteLine($"{i}. {accountNames[i],-25}|{userSaldos[id][i].ToString("C", CultureInfo.CurrentCulture),20}");
                 Console.WriteLine(divider);
             }
         }
@@ -262,14 +458,13 @@ namespace Bankomaten
 
             while (menuOn)
             {
-                Console.Clear();
-
                 Console.WriteLine("--- MENY ----\n");
                 Console.WriteLine("1. Se dina konton och saldo");
                 Console.WriteLine("2. Överföring mellan konton");
                 Console.WriteLine("3. Ta ut pengar");
-                Console.WriteLine("4. Logga ut");
-                Console.WriteLine("\n Gör ditt val genom att trycka på motsvarande siffra på tangentbordet!\n");
+                Console.WriteLine("4. Skapa nytt konto");
+                Console.WriteLine("5. Logga ut");
+                Console.WriteLine("\nGör ditt val genom att trycka på motsvarande siffra på tangentbordet!\n");
 
                 cki = Console.ReadKey(true);
                 // converts keypress to char (simplest way to enable both numpad
@@ -288,14 +483,17 @@ namespace Bankomaten
                         WithdrawFunds(activeUserID);
                         break;
                     case '4':
+                        CreateNewAccount(activeUserID);
+                        break;
+                    case '5':
                         menuOn = false;
                         break;
                     default:
-                        Console.WriteLine("\nThat menu item does not exist! Try again:\n");
+                        Console.WriteLine("\nOgiltigt val! Prova igen!\n");
+                        Thread.Sleep(500);
+                        Console.Clear();
                         break;
-
                 }
-
             }
         }
 
@@ -384,9 +582,9 @@ namespace Bankomaten
 
         // A function that takes user id as input and returns an
         // valid account "id" number, used in withdrawal and transactions.
-        static int Choice(int id)
+        static int Choice(int id, int max)
         {
-            int max = userAccountCount[id] - 1;
+            //int max = userAccountCount[id] - 1;
             bool isNumber;
             int num = 0;
             do
@@ -419,9 +617,9 @@ namespace Bankomaten
                 AccountDisplay(id);
 
                 Console.WriteLine("Skriv in från-konto: ");
-                from = Choice(id);
-                Console.WriteLine($"Från: {accountTypes[from]}. Skriv in till-konto:");
-                to = Choice(id);
+                from = Choice(id, userAccountCount[id]-1);
+                Console.WriteLine($"Från: {accountNames[from]}. Skriv in till-konto:");
+                to = Choice(id, userAccountCount[id] - 1);
 
                 if (from == to)
                 {
@@ -433,7 +631,7 @@ namespace Bankomaten
                 }
                 else
                 {
-                    Console.WriteLine($"Till: {accountTypes[to]}. Skriv in summa som ska överföras:");
+                    Console.WriteLine($"Till: {accountNames[to]}. Skriv in summa som ska överföras:");
                     amount = NumberInput(true);
 
                     if (amount > userSaldos[id][from])
@@ -441,6 +639,14 @@ namespace Bankomaten
                         Console.Beep();
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine($"\nDet finns inte tillräckligt saldo på {accountTypes[from]}!\n");
+                        Console.ResetColor();
+                        transfering = ReturnToMain("Tryck på valfri annan knapp för att prova igen!");
+                    }
+                    else if(amount == 0)
+                    {
+                        Console.Beep();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"\nDu kan inte föra över 0 kr! \n");
                         Console.ResetColor();
                         transfering = ReturnToMain("Tryck på valfri annan knapp för att prova igen!");
                     }
