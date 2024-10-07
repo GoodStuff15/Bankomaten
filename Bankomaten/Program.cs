@@ -30,7 +30,9 @@ namespace Bankomaten
         {
             // Setting up
             Console.Title = "Gustavs Bank-O-Matic";
-            GenerateAccounts();
+            //GenerateAccounts();
+            //SaveAccountInfo();
+            OpenAccountInfo(2);
 
             // Welcome Greeting
             while (running)
@@ -66,6 +68,7 @@ namespace Bankomaten
                     running = ExitProgram();
                 }
             }
+            SaveAccountInfo();
             Console.WriteLine("Tack för ditt bidrag till våra aktieägare!");
         }
 
@@ -186,7 +189,7 @@ namespace Bankomaten
             Console.ResetColor();
             
         }
-         
+
         static void SaveAccountInfo()
         {
             for (int i = 0; i < users.Length; i++)
@@ -194,12 +197,41 @@ namespace Bankomaten
 
                 string name = $"Username: {users[i]}";
                 string pin = $"PIN: {pincodes[i]}";
-                string money = String.Concat(userSaldos[i]);
+                string ID = $"ID: {userIDs[i]}";
 
-                File.AppendAllText($"user{userIDs[i]}.txt", $"{name}\n{pin}\n");
+                File.WriteAllText($"user{userIDs[i]}.txt", $"{ID}\n{name}\n{pin}\n");
+
+                for (int j = 0; j < userAccountCount[i]; j++)
+                {
+                    File.AppendAllText($"user{userIDs[i]}.txt", $"{accountNames[j]}: {userSaldos[i][j]}\n");
+                }
+
             }
+
         }
 
+        static void OpenAccountInfo(int id)
+        {
+                
+        string[] open = File.ReadAllLines($"user{userIDs[id]}.txt");
+
+        for(int i = 2; i < open.Length; i++)
+            {
+                Console.WriteLine(open[i]);
+                string print = open[i].Substring(open[i].IndexOf(":") +1);
+                Console.WriteLine($"print: {print}");
+                double x = Convert.ToDouble(print);
+                Console.WriteLine($"double: {x}");
+                Console.WriteLine(x.ToString("C"));
+            }
+
+
+
+        }
+
+        
+
+        // A method that creates a new acount
         static void CreateNewAccount(int id)
         {
             bool creating = true;
@@ -240,6 +272,8 @@ namespace Bankomaten
             }
         }
 
+        // Three methods that returns arrays with a size of one bigger than it's input parameter
+        // Then adds a value from another input parameter
         static string[] ExpandStringArray(string[] arr, string add)
         {
             string[] temp = new string[arr.Length + 1];
@@ -342,7 +376,6 @@ namespace Bankomaten
             {
                 AccountDisplay(id);
                 viewing = ReturnToMain("");
-                
             }
             Console.Clear();
         }
@@ -442,16 +475,12 @@ namespace Bankomaten
 
                             Console.WriteLine($"Sorry! Wrong PIN. {maxPinTries - pinTries} tries left.");
                         }
-
                     }
-
-
                 }
                 else
                 {
                     Console.WriteLine("Den användaren finns inte, försök igen!");
                 }
-
             }
             // sets failed login state, upon return to start screen will prompt
             // a reboot of program
