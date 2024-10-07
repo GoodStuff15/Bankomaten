@@ -30,9 +30,9 @@ namespace Bankomaten
         {
             // Setting up
             Console.Title = "Gustavs Bank-O-Matic";
-            //GenerateAccounts();
-            //SaveAccountInfo();
-            OpenAccountInfo(2);
+            GenerateAccounts();
+            
+            
 
             // Welcome Greeting
             while (running)
@@ -68,7 +68,7 @@ namespace Bankomaten
                     running = ExitProgram();
                 }
             }
-            SaveAccountInfo();
+            
             Console.WriteLine("Tack för ditt bidrag till våra aktieägare!");
         }
 
@@ -76,9 +76,11 @@ namespace Bankomaten
         static void GenerateAccounts()
         {
             Random r = new Random();
+
             for (int i = 0; i < users.Length; i++)
             {
-
+                if (!File.Exists($"user{userIDs[i]}.txt"))
+                {
                     double[] temp = new double[users.Length];
 
                     for (int j = 0; j < userAccountCount[i]; j++)
@@ -87,6 +89,8 @@ namespace Bankomaten
                     }
 
                 userSaldos[i] = temp;
+                    Save(i);
+                }
             }
         }
         // TEST NEDAN
@@ -96,28 +100,27 @@ namespace Bankomaten
             string[][] dollabill =
                 [
                 ["_", "___", "___", "___", "___", "___", "_"],
-                ["|", $"{v}  ", "   ", "   ", "uuu", "   ", "|"],
+                ["|", $"{v}50", "   ", "   ", "uuu", "   ", "|"],
                 ["|", "   ", "   ", "  (", "o-o", ")  ", "|"],
-                ["|", "   ", "   ", "  |", "'-'", "|  ", "|"],
+                ["|", "   ", "   ", "  /", "'-'", "|  ", "|"],
                 ["|", "___", "___", "___", "___", "___", "|"],
+                ["=", "===","===", "===", "===", "===", " "]
                 ];
 
-            string[][] printed = new string[5][];
+            string[][] printed = new string[6][];
             string[] emptyRow = [" ", " ", " ", " ", " ", " ", " "];
 
-            int max = 4;
+            int max = 5;
             int printCheck = 0;
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 6; i++)
             {
                 printed[i] = emptyRow;
             }
-            (int posL, int posT) = Console.GetCursorPosition();
 
-           
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             
-            for (int i = 0; i < 5 && i >= 0; i++)
+            for (int i = 0; i < 6 && i >= 0; i++)
                 {
                 
                 printed[0] = dollabill[max];
@@ -147,17 +150,26 @@ namespace Bankomaten
                     Console.Write($"{printed[4][j]}");
                     }
                 Console.WriteLine();
-                Thread.Sleep(800);
+                for (int j = 0; j < 7; j++)
+                {
+                    Console.Write($"{printed[5][j]}");
+                }
+                Console.WriteLine();
+                Thread.Sleep(400);
                 cash.Play();
                 
-                if(printCheck == 4)
+                if(printCheck == 5)
                 {
                     Thread.Sleep(2500);
+                }
+                if(printCheck >= 4)
+                {
+                    printed[5] = printed[4];
                 }
                 if (printCheck >= 3)
                 {
                     printed[4] = printed[3];
-                    
+                    printed[3] = emptyRow;
                     
                 }
                 if (printCheck >= 2)
@@ -190,46 +202,66 @@ namespace Bankomaten
             
         }
 
-        static void SaveAccountInfo()
+        static void SaveAllAccounts()
         {
             for (int i = 0; i < users.Length; i++)
             {
-
                 string name = $"Username: {users[i]}";
                 string pin = $"PIN: {pincodes[i]}";
                 string ID = $"ID: {userIDs[i]}";
 
-                File.WriteAllText($"user{userIDs[i]}.txt", $"{ID}\n{name}\n{pin}\n");
+                File.WriteAllText($"user{userIDs[i]}.txt", $"{ID}\n{name}\n{pin}\nAccounts\n");
 
                 for (int j = 0; j < userAccountCount[i]; j++)
                 {
                     File.AppendAllText($"user{userIDs[i]}.txt", $"{accountNames[j]}: {userSaldos[i][j]}\n");
                 }
-
             }
-
         }
 
-        static void OpenAccountInfo(int id)
+        static void Save(int id)
         {
-                
+            string name = $"Username: {users[id]}";
+            string pin = $"PIN: {pincodes[id]}";
+            string ID = $"ID: {userIDs[id]}";
+
+            File.WriteAllText($"user{userIDs[id]}.txt", $"{ID}\n{name}\n{pin}\nAccounts\n");
+
+            for (int j = 0; j < userAccountCount[id]; j++)
+            {
+                File.AppendAllText($"user{userIDs[id]}.txt", $"{accountNames[j]}: {userSaldos[id][j]}\n");
+            }
+        }
+
+        static void Load(int id)
+        {
         string[] open = File.ReadAllLines($"user{userIDs[id]}.txt");
 
-        for(int i = 2; i < open.Length; i++)
+            int accountRow = 0;
+
+            for(int i = 0; i < open.Length; i++)
             {
-                Console.WriteLine(open[i]);
-                string print = open[i].Substring(open[i].IndexOf(":") +1);
-                Console.WriteLine($"print: {print}");
-                double x = Convert.ToDouble(print);
-                Console.WriteLine($"double: {x}");
-                Console.WriteLine(x.ToString("C"));
+                if (open[i] == "Accounts")
+                {
+                    accountRow = i + 1;
+                }
             }
+
+            double[] temp = new double[open.Length - accountRow];
+            int x = 0;
+        for(int i = accountRow; i < open.Length; i++)
+            {
+                
+                string print = open[i].Substring(open[i].IndexOf(":") +1);
+                double amount = Convert.ToDouble(print);
+                temp[x] = amount;
+                x++;
+            }
+            userSaldos[id] = temp;
 
 
 
         }
-
-        
 
         // A method that creates a new acount
         static void CreateNewAccount(int id)
@@ -406,6 +438,8 @@ namespace Bankomaten
 
             if (cki.Key == ConsoleKey.Enter)
             {
+                Console.Clear();
+                Save(activeUserID);
                 return false;
             }
             else
@@ -467,6 +501,7 @@ namespace Bankomaten
                         {
                             pinCorrect = true;
                             activeUserID = Array.IndexOf(users, userName);
+                            Load(activeUserID);
                             return true;
                         }
                         else
