@@ -30,7 +30,7 @@ namespace Bankomaten
 
             // Testing
 
-            PrintMoney('£');
+            //PrintMoney('£');
 
             // Welcome Greeting
             while (running)
@@ -80,11 +80,11 @@ namespace Bankomaten
             Random r = new Random();
             for (int i = 0; i < users.Length; i++)
             {
-                if(!File.Exists($"user{userIDs[i]}.txt"))
-                {
+               // if(!File.Exists($"user{userIDs[i]}.txt"))
+               // {
 
                     double[] temp = new double[users.Length];
-                    File.Create($"user{userIDs[i]}.txt");
+                    //File.Create($"user{userIDs[i]}.txt");
 
                     for (int j = 0; j < userAccountCount[i]; j++)
                     {
@@ -92,7 +92,7 @@ namespace Bankomaten
                     }
 
                 userSaldos[i] = temp;
-                }
+              //  }
             }
         }
         // TEST NEDAN
@@ -117,12 +117,12 @@ namespace Bankomaten
             {
                 printed[i] = emptyRow;
             }
-
+            
             Console.ForegroundColor = ConsoleColor.DarkGreen;
          
             for (int i = 0; i < 5 && i >= 0; i++)
                 {
-                    printed[0] = dollabill[max];
+                printed[0] = dollabill[max];
 
                     for (int j = 0; j < 7; j++)
                     {
@@ -160,13 +160,11 @@ namespace Bankomaten
                 }
                 if (printCheck >= 2)
                 {
-
                     printed[3] = printed[2];
                     printed[2] = emptyRow;
                 }
                 if (printCheck >= 1)
                 {
-
                     printed[2] = printed[1];
                     printed[1] = emptyRow;
                 }
@@ -202,26 +200,68 @@ namespace Bankomaten
             }
         }
 
-        static string[] ExpandStringArray(string[] arr, string nm)
+        static void CreateNewAccount(int id)
+        {
+            
+            Console.WriteLine("Skriv in namn på ditt nya konto:");
+            string newName = Console.ReadLine();
+
+            Console.WriteLine($"Account types length: {accountTypes.Length}\n" +
+                $"userSaldosid length: {userSaldos[id].Length}");
+
+            if (userAccountCount[id] > accountTypes.Length)
+            {
+                userSaldos[id] = ExpandDoubleArray(userSaldos[id], 0);
+            }
+            if (userAccountCount[id] >= accountTypes.Length)
+            {
+                accountTypes = ExpandStringArray(accountTypes, newName);
+               //accountTypes[userAccountCount[id] - 1] = newName;
+            }
+            else if (userAccountCount[id] < accountTypes.Length)
+            {
+                accountTypes[userAccountCount[id]] = newName;   
+                
+            }
+            
+            double[] temp = new double[userSaldos[id].Length+1];
+            userSaldos[id].CopyTo(temp, 0);
+            temp[userSaldos[id].Length] = 0;
+            userSaldos[id] = temp;
+            userAccountCount[id]++;
+        }
+
+        static string[] ExpandStringArray(string[] arr, string add)
         {
 
             string[] temp = new string[arr.Length + 1];
 
             arr.CopyTo(temp, 0);
 
-            temp[arr.Length + 1] = nm;
+            temp[arr.Length] = add;
 
             return temp;
         }
 
-        static int[] ExpandIntArray(string[] arr, int nm)
+        static int[] ExpandIntArray(int[] arr, int add)
         {
 
             int[] temp = new int[arr.Length + 1];
 
             arr.CopyTo(temp, 0);
 
-            temp[arr.Length + 1] = nm;
+            temp[arr.Length + 1] = add;
+
+            return temp;
+        }
+        static double[] ExpandDoubleArray(double[] arr, double add)
+        {
+
+            double[] temp = new double[arr.Length + 1];
+
+            arr.CopyTo(temp, 0);
+
+            temp[arr.Length] = add;
 
             return temp;
         }
@@ -419,6 +459,7 @@ namespace Bankomaten
 
                 Console.WriteLine("--- MENY ----\n");
                 Console.WriteLine("1. Se dina konton och saldo");
+                Console.WriteLine("5. Skapa nytt konto");
                 Console.WriteLine("2. Överföring mellan konton");
                 Console.WriteLine("3. Ta ut pengar");
                 Console.WriteLine("4. Logga ut");
@@ -443,8 +484,11 @@ namespace Bankomaten
                     case '4':
                         menuOn = false;
                         break;
+                    case '5':
+                        CreateNewAccount(activeUserID);
+                        break;
                     default:
-                        Console.WriteLine("\nThat menu item does not exist! Try again:\n");
+                        Console.WriteLine("\nOgiltigt val! Prova igen!\n");
                         break;
 
                 }
