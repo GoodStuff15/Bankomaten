@@ -32,11 +32,6 @@ namespace Bankomaten
             Console.Title = "Gustavs Bank-O-Matic";
             GenerateAccounts();
 
-            // Testing
-
-            Console.ReadKey();
-            //PrintMoney('£');
-
             // Welcome Greeting
             while (running)
             {
@@ -98,7 +93,7 @@ namespace Bankomaten
             string[][] dollabill =
                 [
                 ["_", "___", "___", "___", "___", "___", "_"],
-                ["|", $"50{v}", "   ", "   ", "uuu", "   ", "|"],
+                ["|", $"{v}  ", "   ", "   ", "uuu", "   ", "|"],
                 ["|", "   ", "   ", "  (", "o-o", ")  ", "|"],
                 ["|", "   ", "   ", "  |", "'-'", "|  ", "|"],
                 ["|", "___", "___", "___", "___", "___", "|"],
@@ -114,11 +109,14 @@ namespace Bankomaten
             {
                 printed[i] = emptyRow;
             }
-            
+            (int posL, int posT) = Console.GetCursorPosition();
+
+           
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-         
+            
             for (int i = 0; i < 5 && i >= 0; i++)
                 {
+                
                 printed[0] = dollabill[max];
 
                     for (int j = 0; j < 7; j++)
@@ -146,14 +144,18 @@ namespace Bankomaten
                     Console.Write($"{printed[4][j]}");
                     }
                 Console.WriteLine();
-                Thread.Sleep(1000);
+                Thread.Sleep(800);
                 cash.Play();
-                Console.Clear();
-
+                
+                if(printCheck == 4)
+                {
+                    Thread.Sleep(2500);
+                }
                 if (printCheck >= 3)
                 {
                     printed[4] = printed[3];
-                    printed[3] = emptyRow;
+                    
+                    
                 }
                 if (printCheck >= 2)
                 {
@@ -177,10 +179,12 @@ namespace Bankomaten
                 }
 
                 printCheck++;
+                
+                Console.Clear();
             }
 
             Console.ResetColor();
-            Thread.Sleep(1500);
+            
         }
          
         static void SaveAccountInfo()
@@ -312,6 +316,9 @@ namespace Bankomaten
 
                         userSaldos[id][from] -= amount;
 
+                        Console.Clear();
+                        PrintMoney('$');
+
                         Console.WriteLine($"Nytt saldo på {accountNames[from]}: {userSaldos[id][from].ToString("C", CultureInfo.CurrentCulture)}");
                         Console.ForegroundColor = ConsoleColor.DarkGreen;
                         Console.WriteLine($"Ditt uttag: {amount.ToString("C", CultureInfo.CurrentCulture)}");
@@ -335,7 +342,9 @@ namespace Bankomaten
             {
                 AccountDisplay(id);
                 viewing = ReturnToMain("");
+                
             }
+            Console.Clear();
         }
 
         // The actual displaying of the accounts and information is in this method
