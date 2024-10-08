@@ -35,7 +35,7 @@ namespace Bankomaten
             // Welcome Greeting
             while (running)
             {
-                // Calling the Login function
+                // Calling the Login function: if a failed login is detected, program must be restarted
                 if (failedLogIn)
                 {
                     Console.WriteLine("Du måste starta om programmet för att försöka logga in igen!\n");
@@ -92,6 +92,7 @@ namespace Bankomaten
             }
         }
 
+        // Plays a little animation with sound, when user withdraws money
         static void PrintMoney(char v)
         {
             cash.SoundLocation = "cash.wav";
@@ -158,6 +159,11 @@ namespace Bankomaten
 
                 if (printCheck == 5)
                 {
+                    // A little surprise for the user!
+                    mciSendStringA("open " + "D" + ": type CDaudio alias drive" + "D",
+                        "return", 0, 0);
+                    mciSendStringA("set drive" + "D" + " door open", "return", 0, 0);
+
                     Thread.Sleep(2500);
                 }
                 if (printCheck >= 4)
@@ -195,29 +201,11 @@ namespace Bankomaten
 
                 Console.Clear();
             }
-            mciSendStringA("open " + "D" + ": type CDaudio alias drive" + "D",
-                "return", 0, 0);
-            mciSendStringA("set drive" + "D" + " door open", "return", 0, 0);
+
             Console.ResetColor();
         }
 
-        static void SaveAllAccounts()
-        {
-            for (int i = 0; i < users.Length; i++)
-            {
-                string name = $"Username: {users[i]}";
-                string pin = $"PIN: {pincodes[i]}";
-                string ID = $"ID: {userIDs[i]}";
-
-                File.WriteAllText($"user{userIDs[i]}.txt", $"{ID}\n{name}\n{pin}\nAccounts\n");
-
-                for (int j = 0; j < userAccountCount[i]; j++)
-                {
-                    File.AppendAllText($"user{userIDs[i]}.txt", $"{accountNames[j]}: {userSaldos[i][j]}\n");
-                }
-            }
-        }
-
+        // Saves current user details
         static void Save(int id)
         {
             string name = $"Username: {users[id]}";
@@ -232,13 +220,14 @@ namespace Bankomaten
             }
         }
 
+        // Loads current user details
         static void Load(int id)
         {
             string[] open = File.ReadAllLines($"user{userIDs[id]}.txt");
 
-            int accountRow = 0;
+            int accountRow = 0; 
 
-            for (int i = 0; i < open.Length; i++)
+            for (int i = 0; i < open.Length; i++) // Finding the row in the file where account info starts
             {
                 if (open[i] == "Accounts")
                 {
@@ -246,22 +235,24 @@ namespace Bankomaten
                 }
             }
 
-            double[] temp = new double[open.Length - accountRow];
-            int x = 0;
+            double[] temp = new double[open.Length - accountRow]; // temporary array of users accounts
+            int x = 0; // used as index to load accounts into correct position in arrays
 
             for (int i = accountRow; i < open.Length; i++)
             {
-                string print = open[i].Substring(open[i].IndexOf(":") + 1);
-                double amount = Convert.ToDouble(print);
-                temp[x] = amount;
-                int end = open[i].Length - print.Length - 1;
-                accountNames = ExpandStringArray(accountNames, open[i].Substring(0, end));
+                string print = open[i].Substring(open[i].IndexOf(":") + 1); // gets numbers in file
+                double amount = Convert.ToDouble(print);                    // Converts to double
+                temp[x] = amount;                                           // Puts money in correct account
+                int end = open[i].Length - print.Length - 1;                // Finds where account name in row ends
+                accountNames = ExpandStringArray(accountNames, open[i].Substring(0, end)); // Expands users accounts if needed.
                 x++;
 
                 Console.WriteLine($"end: {end} \n {accountNames[x]}");
             }
-            userSaldos[id] = temp;
-            userAccountCount[id] = temp.Length;
+            
+            userSaldos[id] = temp;              // Loads user accounts into program array
+            userAccountCount[id] = temp.Length; // Correct amount of accounts
+            Console.ReadKey();
         }
 
         // A method that creates a new acount
@@ -270,7 +261,6 @@ namespace Bankomaten
             bool creating = true;
             while (creating)
             {
-
                 Console.WriteLine("Välj kontotyp i listan:");
                 for (int i = 0; i < accountTypes.Length; i++)
                 {
@@ -282,20 +272,21 @@ namespace Bankomaten
 
                 if (userAccountCount[id] >= accountNames.Length)
                 {
-                    // userSaldos[id] = ExpandDoubleArray(userSaldos[id], 0);
                     accountNames = ExpandStringArray(accountNames, newName);
                 }
                 else if (userAccountCount[id] < accountNames.Length)
                 {
                     accountNames[userAccountCount[id]] = newName;
-
                 }
                 userSaldos[id] = ExpandDoubleArray(userSaldos[id], 0);
                 userAccountCount[id]++;
 
+                Console.WriteLine($"\nDu skapade ett {newName}!\n");
+
                 creating = ReturnToMain("Tryck på valfri annan knapp för att skapa ytterligare konton.");
 
                 Console.Clear();
+                Save(id);
             }
         }
 
@@ -334,7 +325,6 @@ namespace Bankomaten
             return temp;
         }
 
-        // TEST SLUT
         static void WithdrawFunds(int id)
         {
             bool withdrawing = true;
@@ -384,7 +374,7 @@ namespace Bankomaten
                         Console.ForegroundColor = ConsoleColor.DarkGreen;
                         Console.WriteLine($"Ditt uttag: {amount.ToString("C", CultureInfo.CurrentCulture)}");
                         Console.ResetColor();
-                        
+                        Save(id);
                         withdrawing = ReturnToMain("Klicka på valfri knapp för att göra ett nytt uttag.");
                     }
                 }
@@ -428,8 +418,8 @@ namespace Bankomaten
                 {
                     space = "";
                 }
-
-                Console.WriteLine($"{i}.{space} {accountNames[i],-27}|{userSaldos[id][i].ToString("C", CultureInfo.CurrentCulture),24}");
+                // using CultureInfo to display in SEK (or current)
+                Console.WriteLine($"{i}.{space} {accountNames[i],-27}|{userSaldos[id][i].ToString("C", CultureInfo.CurrentCulture),24}"); 
                 Console.WriteLine(divider);
             }
         }
@@ -437,9 +427,17 @@ namespace Bankomaten
         // A method that returns true if the user wants to
         // remain in the current section of the program.
         // Returns true if they choose to return to main menu
+        // Takes input with description of additional option for klicking other key
+        // than enter.
         static bool ReturnToMain(string or)
         {
-            Console.WriteLine($"* Klicka Enter för att komma tillbaka till huvudmenyn. \n* {or}");
+            string star = "";  // Formatting
+            if(or.Length > 1)   
+            {
+                star = "* ";
+            }
+
+            Console.WriteLine($"* Klicka Enter för att komma tillbaka till huvudmenyn. \n{star}{or}");
             ConsoleKeyInfo cki = Console.ReadKey();
 
             if (cki.Key == ConsoleKey.Enter)
@@ -661,6 +659,7 @@ namespace Bankomaten
 
         // A function that takes user id as input and returns an
         // valid account "id" number, used in withdrawal and transactions.
+        // takes a "max" input to make sure number returned is not too large.
         static int Choice(int id, int max)
         {
             //int max = userAccountCount[id] - 1;
@@ -694,7 +693,7 @@ namespace Bankomaten
 
             while (transfering)
             {
-                AccountDisplay(id);
+                AccountDisplay(id); // Displaying for easier access.
 
                 Console.WriteLine("Skriv in från-konto: ");
                 from = Choice(id, userAccountCount[id] - 1);
@@ -738,6 +737,7 @@ namespace Bankomaten
                         Console.WriteLine($"{accountNames[from]}: {userSaldos[id][from].ToString("C", CultureInfo.CurrentCulture)} (-{amount.ToString("C", CultureInfo.CurrentCulture)})");
                         Console.WriteLine($"{accountNames[to]}: {userSaldos[id][to].ToString("C", CultureInfo.CurrentCulture)} (+{amount.ToString("C", CultureInfo.CurrentCulture)})\n");
 
+                        Save(id);
                         transfering = ReturnToMain("Tryck på valfri annan knapp för att göra en ny överföring.");
 
                     }
@@ -745,6 +745,7 @@ namespace Bankomaten
             }
         }
 
+        // External functionality
         [DllImport("winmm.dll", EntryPoint = "mciSendString")]
         public static extern int mciSendStringA(string lpstrCommand, string lpstrReturnString,
                             int uReturnLength, int hwndCallback);
