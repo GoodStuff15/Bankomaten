@@ -342,6 +342,8 @@ namespace Bankomaten
                     Console.WriteLine($"Du valde {accountNames[from]}\n");
                     Console.WriteLine("Skriv in summa: ");
                     amount = NumberInput(true);
+                    Console.WriteLine("Bekräfta överföringen med din PIN-kod");
+                    int attempt = (int)NumberInput(false);
 
                     if (amount > userSaldos[id][from])
                     {
@@ -356,6 +358,14 @@ namespace Bankomaten
                         Console.Beep();
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("\nKontot är tomt! ");
+                        Console.ResetColor();
+                        withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
+                    }
+                    else if(attempt != pincodes[id])
+                    {
+                        Console.Beep();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\nFel PIN-kod!\n");
                         Console.ResetColor();
                         withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
                     }
