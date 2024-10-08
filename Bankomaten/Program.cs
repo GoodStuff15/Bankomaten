@@ -70,7 +70,8 @@ namespace Bankomaten
             Console.WriteLine("Tack för ditt bidrag till våra aktieägare!");
         }
 
-        // Puts a random amount of money in the accounts the respective users have access to.
+        // Puts a random amount of money in the accounts the respective users have access to,
+        // and saves information to text files.
         // Only generates new amounts if respective save files don't exist
         static void GenerateAccounts()
         {
@@ -251,7 +252,6 @@ namespace Bankomaten
             
             userSaldos[id] = temp;              // Loads user accounts into program array
             userAccountCount[id] = temp.Length; // Correct amount of accounts
-            Console.ReadKey();
         }
 
         // A method that creates a new acount
@@ -345,7 +345,15 @@ namespace Bankomaten
                     Console.WriteLine("Bekräfta överföringen med din PIN-kod");
                     int attempt = (int)NumberInput(false);
 
-                    if (amount > userSaldos[id][from])
+                    if (attempt != pincodes[id])
+                    {
+                        Console.Beep();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\nFel PIN-kod!\n");
+                        Console.ResetColor();
+                        withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
+                    }
+                    else if (amount > userSaldos[id][from])
                     {
                         Console.Beep();
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -361,11 +369,11 @@ namespace Bankomaten
                         Console.ResetColor();
                         withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
                     }
-                    else if(attempt != pincodes[id])
+                    else if (amount == 0)
                     {
                         Console.Beep();
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\nFel PIN-kod!\n");
+                        Console.WriteLine("\nDu kan inte föra över 0 kr! ");
                         Console.ResetColor();
                         withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
                     }
@@ -468,21 +476,17 @@ namespace Bankomaten
             Console.WriteLine("Vänligen fyll i användarnamn och PIN för att logga in: ");
 
             // Properties
-            int pinEntry;
-            string userName = "";
 
             // Maximum number of PIN entries is 3
-            int pinTries = 0;
             int maxPinTries = 3;
 
             // Two bools that are used to control while loops below
             bool userCorrect = false;
-            bool pinCorrect = false;
 
             while (!userCorrect)
             {
                 Console.WriteLine("Användarnamn: ");
-                userName = Console.ReadLine();
+                string userName = Console.ReadLine();
 
                 // if statement checks if the entered userName exists in the "database"
                 // (the username array we passed to the method)
@@ -491,37 +495,29 @@ namespace Bankomaten
                 if (users.Contains(userName))
                 {
                     userCorrect = true;
+                    activeUserID = Array.IndexOf(users, userName);
+
 
                     // User enters a pin code
                     // This while loops runs a number of times equal to number of max tries.
                     // After that, the LogIn function returns false.
 
-                    while (!pinCorrect && pinTries < maxPinTries)
+                    for(int i = 0; i <= maxPinTries; i++)
                     {
-
                         Console.WriteLine("PIN-kod: ");
-                        pinEntry = (int)NumberInput(false);
+                        int pinEntry = (int)NumberInput(false);
 
-                        // If statement checks if the pin entered matches the user name
-                        // In this case by looking if they have the same index in their respective arrays
-                        // If true, the method returns true and the user is logged in!
-                        // It then sets the activeUserID to the users ID, so we can find their
-                        // information in the container arrays.
-                        // If false, pinTries is incremented, and the user is notified of
-                        // the number of tries they have left.
-
-                        if (Array.IndexOf(users, userName) == Array.IndexOf(pincodes, pinEntry))
+                        if(pinEntry == pincodes[activeUserID])
                         {
-                            pinCorrect = true;
-                            activeUserID = Array.IndexOf(users, userName);
                             Load(activeUserID);
+                            Console.Clear();
+                            Console.WriteLine($"Login lyckades! Välkommen {users[activeUserID]}. ");
+                            Thread.Sleep(1500);
                             return true;
                         }
                         else
                         {
-                            pinTries++;
-
-                            Console.WriteLine($"Sorry! Wrong PIN. {maxPinTries - pinTries} tries left.");
+                            Console.WriteLine($"Fel PIN-kod. {maxPinTries - i} försök kvar.");
                         }
                     }
                 }
