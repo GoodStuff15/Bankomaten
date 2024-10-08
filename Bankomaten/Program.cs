@@ -25,7 +25,7 @@ namespace Bankomaten
         static int[] pincodes = new int[] { 123, 666, 420, 808, 000 };
         static int[] userAccountCount = new int[] { 1, 2, 3, 4, 5 };
 
-        static double[][] userSaldos = new double[users.Length][];
+        static decimal[][] userSaldos = new decimal[users.Length][];
 
         static void Main(string[] args)
         {
@@ -81,11 +81,11 @@ namespace Bankomaten
             {
                 if (!File.Exists($"user{userIDs[i]}.txt"))
                 {
-                    double[] temp = new double[users.Length];
+                    decimal[] temp = new decimal[users.Length];
 
                     for (int j = 0; j < userAccountCount[i]; j++)
                     {
-                        temp[j] = (double)r.Next(1, 1000001);
+                        temp[j] = (decimal)r.Next(1, 1000001);
                     }
 
                     userSaldos[i] = temp;
@@ -237,13 +237,13 @@ namespace Bankomaten
                 }
             }
 
-            double[] temp = new double[open.Length - accountRow]; // temporary array of users accounts
+            decimal[] temp = new decimal[open.Length - accountRow]; // temporary array of users accounts
             int x = 0; // used as index to load accounts into correct position in arrays
 
             for (int i = accountRow; i < open.Length; i++)
             {
                 string print = open[i].Substring(open[i].IndexOf(":") + 1); // gets numbers in file
-                double amount = Convert.ToDouble(print);                    // Converts to double
+                decimal amount = Convert.ToDecimal(print);                    // Converts to double
                 temp[x] = amount;                                           // Puts money in correct account
                 int end = open[i].Length - print.Length - 1;                // Finds where account name in row ends
                 accountNames = ExpandStringArray(accountNames, open[i].Substring(0, end)); // Expands users accounts if needed.
@@ -277,7 +277,7 @@ namespace Bankomaten
                 {
                     accountNames[userAccountCount[id]] = newName;
                 }
-                userSaldos[id] = ExpandDoubleArray(userSaldos[id], 0);
+                userSaldos[id] = ExpandDecimalArray(userSaldos[id], 0);
                 userAccountCount[id]++;
 
                 Console.WriteLine($"\nDu skapade ett {newName}!\n");
@@ -313,9 +313,9 @@ namespace Bankomaten
             return temp;
         }
 
-        static double[] ExpandDoubleArray(double[] arr, double add)
+        static decimal[] ExpandDecimalArray(decimal[] arr, decimal add)
         {
-            double[] temp = new double[arr.Length + 1];
+            decimal[] temp = new decimal[arr.Length + 1];
 
             arr.CopyTo(temp, 0);
 
@@ -328,7 +328,7 @@ namespace Bankomaten
         {
             bool withdrawing = true;
             int from;
-            double amount = 0;
+            decimal amount = 0;
 
             while (withdrawing)
             {
@@ -612,17 +612,17 @@ namespace Bankomaten
         // A function that takes input from user, makes sure its in number form,
         // and then returns it. Takes a bool as argument to determine whether to
         // return in currency form (double including ören) or regular number form.
-        static double NumberInput(bool money)
+        static decimal NumberInput(bool money)
         {
             bool isNumber = false;
             string numberString = "";
-            double number;
+            decimal number;
             ConsoleKeyInfo cki;
 
             do
             {   // Takes input and checks if it is a number
                 cki = Console.ReadKey(true);
-                isNumber = double.TryParse(cki.KeyChar.ToString(), out double check);
+                isNumber = decimal.TryParse(cki.KeyChar.ToString(), out decimal check);
 
                 if (cki.Key != ConsoleKey.Backspace)
                 {
@@ -657,7 +657,7 @@ namespace Bankomaten
 
             // The string is converted to double and returned.
             // CurrentCulture used to make sure Ören are represented correctly.
-            double.TryParse(numberString, CultureInfo.CurrentCulture, out number);
+            decimal.TryParse(numberString, CultureInfo.CurrentCulture, out number);
 
             return number;
         }
@@ -693,7 +693,7 @@ namespace Bankomaten
         {
             int from;
             int to;
-            double amount;
+            decimal amount;
             bool transfering = true;
 
             while (transfering)
@@ -749,6 +749,7 @@ namespace Bankomaten
                 }
             }
         }
+
 
         // External functionality
         [DllImport("winmm.dll", EntryPoint = "mciSendString")]
