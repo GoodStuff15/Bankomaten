@@ -324,7 +324,7 @@ namespace Bankomaten
 
             return temp;
         }
-
+         
         static void WithdrawFunds(int id)
         {
             bool withdrawing = true;
