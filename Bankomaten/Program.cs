@@ -1,7 +1,8 @@
 ﻿// Gustav Eriksson Söderlund, SUT24
-using System.Runtime.InteropServices;
-using System.Globalization;  // For displaying Ören
-using System.Media;          // To play sounds on Windows
+
+using System.Runtime.InteropServices; // For external functionality
+using System.Globalization;           // For displaying Ören
+using System.Media;                   // To play sounds on Windows
 
 
 namespace Bankomaten
@@ -246,8 +247,6 @@ namespace Bankomaten
                 int end = open[i].Length - print.Length - 1;                // Finds where account name in row ends
                 accountNames = ExpandStringArray(accountNames, open[i].Substring(0, end)); // Expands users accounts if needed.
                 x++;
-
-                Console.WriteLine($"end: {end} \n {accountNames[x]}");
             }
             
             userSaldos[id] = temp;              // Loads user accounts into program array
@@ -748,7 +747,7 @@ namespace Bankomaten
         // External functionality
         [DllImport("winmm.dll", EntryPoint = "mciSendString")]
         public static extern int mciSendStringA(string lpstrCommand, string lpstrReturnString,
-                            int uReturnLength, int hwndCallback);
+                                                int uReturnLength, int hwndCallback);
 
 
     }
