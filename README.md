@@ -6,8 +6,10 @@ Built by: Gustav Eriksson Söderlund
 
 A small console app that simulates a cash machine with some internet bank functionality.
 
-Uses arrays to keep track of active user and properties.
+Uses arrays and jagged arrays to keep track of active user and its properties.
 Also contains functions for safe number input.
+
+Generates random amounts in user accounts on first run, after that saves and loads information from text files.
 
 --- Motivering --- (namespace: swedish)
 
@@ -32,5 +34,8 @@ som handlar om överföringar och uttag.
 
 Om jag hade börjat om från början hade jag nog provat med en multidimensionell jagged array för all information.
 Jag misstänker att det upplägget hade varit lättare att få mer dynamiskt än vad mitt program är idag.
+
+Jag hade också med mer tid försökt undvika nästlade loopar och if-statements mer än vad jag gjort idag, för 
+att göra läsbarheten bättre och framtida felsökning enklare.
 
 
