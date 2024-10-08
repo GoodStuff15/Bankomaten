@@ -32,7 +32,7 @@ namespace Bankomaten
             // Setting up
             Console.Title = "Gustavs Bank-O-Matic";
             GenerateAccounts();
-
+            delbart();
             // Welcome Greeting
             while (running)
             {
@@ -337,10 +337,8 @@ namespace Bankomaten
 
                 from = Choice(id, userAccountCount[id] - 1);
 
-                if (userAccountCount[id] > from)
-                {
                     Console.WriteLine($"Du valde {accountNames[from]}\n");
-                    Console.WriteLine("Skriv in summa: ");
+                    Console.WriteLine("Skriv in summa (du kan ta ut 100- 200- och 500-lappar: ");
                     amount = NumberInput(true);
                     Console.WriteLine("Bekräfta överföringen med din PIN-kod");
                     int attempt = (int)NumberInput(false);
@@ -357,7 +355,7 @@ namespace Bankomaten
                     {
                         Console.Beep();
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\nDet finns inte tillräckligt med pengar på kontot! ");
+                        Console.WriteLine("\nDet finns inte tillräckligt med pengar på kontot!\n ");
                         Console.ResetColor();
                         withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
                     }
@@ -365,7 +363,7 @@ namespace Bankomaten
                     {
                         Console.Beep();
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\nKontot är tomt! ");
+                        Console.WriteLine("\nKontot är tomt! \n");
                         Console.ResetColor();
                         withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
                     }
@@ -373,10 +371,18 @@ namespace Bankomaten
                     {
                         Console.Beep();
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\nDu kan inte föra över 0 kr! ");
+                        Console.WriteLine("\nDu kan inte föra över 0 kr!\n ");
                         Console.ResetColor();
                         withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
                     }
+                    else if(amount % 100 != 0)
+                    {
+                    Console.Beep();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\nDu måste ta ut en summa i hundralappar!\n ");
+                    Console.ResetColor();
+                    withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
+                }
                     else
                     {
                         // Removes the amount from the sending account
@@ -394,7 +400,7 @@ namespace Bankomaten
                         Save(id);
                         withdrawing = ReturnToMain("Klicka på valfri knapp för att göra ett nytt uttag.");
                     }
-                }
+                
             }
         }
 
@@ -756,6 +762,14 @@ namespace Bankomaten
         public static extern int mciSendStringA(string lpstrCommand, string lpstrReturnString,
                                                 int uReturnLength, int hwndCallback);
 
+        static void delbart()
+        {
+            int i = 51249;
+
+            int result = i % 100;
+
+            Console.WriteLine(result);
+        }
 
     }
 }
