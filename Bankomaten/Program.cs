@@ -16,7 +16,7 @@ namespace Bankomaten
         static int activeUserID;
         static SoundPlayer cash = new SoundPlayer();
 
-        static string[] accountTypes = new string[] { "Lönekonto", "Sparkonto", "Investeringssparkonto", "Aktiekonto", "Magic the Gathering-konto" };
+        static string[] accountTypes = new string[] { "Lönekonto", "Sparkonto", "Investeringssparkonto", "Aktiekonto", "Magic the Gathering-konto", "International Account" };
         static string[] accountNames = accountTypes;
 
         // Containers
@@ -25,6 +25,10 @@ namespace Bankomaten
         static int[] pincodes = new int[] { 123, 666, 420, 808, 000 };
         static int[] userAccountCount = new int[] { 1, 2, 3, 4, 5 };
 
+        static string[] currencyNames = new string[] { "SEK", "Euro", "Dollar", "Pund" };
+        static decimal[] conversionRates = new decimal[] { 0, 11.34m, 10.34m, 13.55m };
+        static char[] currencySymbol = new char[] { 'k', '€', '$', '£' };
+
         static decimal[][] userSaldos = new decimal[users.Length][];
 
         static void Main(string[] args)
@@ -32,7 +36,8 @@ namespace Bankomaten
             // Setting up
             Console.Title = "Gustavs Bank-O-Matic";
             GenerateAccounts();
-            delbart();
+            
+            
             // Welcome Greeting
             while (running)
             {
@@ -441,9 +446,20 @@ namespace Bankomaten
                 {
                     space = "";
                 }
-                // using CultureInfo to display in SEK (or current)
-                Console.WriteLine($"{i}.{space} {accountNames[i],-27}|{userSaldos[id][i].ToString("C", CultureInfo.CurrentCulture),24}"); 
-                Console.WriteLine(divider);
+                
+                if (accountNames[i] == "International Account")
+                {
+                    CultureInfo brp = new CultureInfo("en-EN", false);
+                    Console.WriteLine($"{i}.{space} {accountNames[i],-27}|{userSaldos[id][i].ToString("C", brp.NumberFormat),24}");
+                    Console.WriteLine(divider);
+                }
+                else
+                {
+                    // using CultureInfo to display in SEK (or current)
+                    Console.WriteLine($"{i}.{space} {accountNames[i],-27}|{userSaldos[id][i].ToString("C", CultureInfo.CurrentCulture),24}");
+                    Console.WriteLine(divider);
+                }
+
             }
         }
 
@@ -503,7 +519,6 @@ namespace Bankomaten
                     userCorrect = true;
                     activeUserID = Array.IndexOf(users, userName);
 
-
                     // User enters a pin code
                     // This while loops runs a number of times equal to number of max tries.
                     // After that, the LogIn function returns false.
@@ -543,9 +558,10 @@ namespace Bankomaten
         {
             ConsoleKeyInfo cki;
             bool menuOn = true;
-
+            
             while (menuOn)
             {
+                ConvertCurrency(1000, 1, 2);
                 Console.WriteLine("--- MENY ----\n");
                 Console.WriteLine("1. Se dina konton och saldo");
                 Console.WriteLine("2. Överföring mellan konton");
@@ -762,13 +778,12 @@ namespace Bankomaten
         public static extern int mciSendStringA(string lpstrCommand, string lpstrReturnString,
                                                 int uReturnLength, int hwndCallback);
 
-        static void delbart()
+        static decimal ConvertCurrency(decimal number, int from, int to)
         {
-            int i = 51249;
+            number = number * conversionRates[from];
+            decimal conv = number / conversionRates[to];
 
-            int result = i % 100;
-
-            Console.WriteLine(result);
+            return conv;
         }
 
     }
