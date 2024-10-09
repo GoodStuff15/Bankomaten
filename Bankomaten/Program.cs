@@ -5,6 +5,7 @@ using System.Globalization;           // For displaying Ören
 using System.Media;                   // To play sounds on Windows
 
 
+
 namespace Bankomaten
 {
     internal class Program
@@ -17,7 +18,8 @@ namespace Bankomaten
         static SoundPlayer cash = new SoundPlayer();
 
         static string[] accountTypes = new string[] { "Lönekonto", "Sparkonto", "Investeringssparkonto", "Aktiekonto", "Magic the Gathering-konto", "International Account" };
-        static string[] accountNames = accountTypes;
+        static string[] accountNames = new string[accountTypes.Length];
+        static string[] accountCurrency = new string[] { "SEK", "SEK", "SEK", "SEK", "SEK", "SEK" };
 
         // Containers
         static int[] userIDs = new int[] { 0, 1, 2, 3, 4, 5 };
@@ -26,7 +28,7 @@ namespace Bankomaten
         static int[] userAccountCount = new int[] { 1, 2, 3, 4, 5 };
 
         static string[] currencyNames = new string[] { "SEK", "Euro", "Dollar", "Pund" };
-        static decimal[] conversionRates = new decimal[] { 0, 11.34m, 10.34m, 13.55m };
+        static decimal[] conversionRates = new decimal[] { 1m, 11.34m, 10.34m, 13.55m };
         static char[] currencySymbol = new char[] { 'k', '€', '$', '£' };
 
         static decimal[][] userSaldos = new decimal[users.Length][];
@@ -36,8 +38,24 @@ namespace Bankomaten
             // Setting up
             Console.Title = "Gustavs Bank-O-Matic";
             GenerateAccounts();
-            
-            
+            Console.OutputEncoding = System.Text.Encoding.UTF8; // For €
+            // TEST
+
+            int i = 1;
+            bool j = true;
+
+            if (j == true && i == 1)
+            {
+                Console.WriteLine("J true, i 1");
+            }
+            else if (j == false && i == 1)
+            {
+                Console.WriteLine("J false, i 1");
+            }
+            else
+            {
+                Console.WriteLine("else");
+            }
             // Welcome Greeting
             while (running)
             {
@@ -91,6 +109,7 @@ namespace Bankomaten
                     for (int j = 0; j < userAccountCount[i]; j++)
                     {
                         temp[j] = (decimal)r.Next(1, 1000001);
+                        accountNames[j] = accountTypes[j];
                     }
 
                     userSaldos[i] = temp;
@@ -99,14 +118,14 @@ namespace Bankomaten
             }
         }
 
-        // Plays a little animation with sound, when user withdraws money
+        // Plays a little animation with sound when user withdraws money
         static void PrintMoney(char v)
         {
             cash.SoundLocation = "cash.wav";
-            string[][] dollabill =
+            string[][] dollabill = // Graphics
                 [
                 ["_", "___", "___", "___", "___", "___", "_"],
-                ["|", $"{v}50", "   ", "   ", "uuu", "   ", "|"],
+                ["|", "100", " SE", "K   ", "uuu", "   ", "|"],
                 ["|", "   ", "   ", "  (", "o-o", ")  ", "|"],
                 ["|", "   ", "   ", "  /", "'-'", "|  ", "|"],
                 ["|", "___", "___", "___", "___", "___", "|"],
@@ -121,7 +140,7 @@ namespace Bankomaten
 
             for (int i = 0; i < 6; i++)
             {
-                printed[i] = emptyRow;
+                printed[i] = emptyRow; // fill the jagged array so it's easier to print to
             }
 
             Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -130,7 +149,7 @@ namespace Bankomaten
             {
 
                 printed[0] = dollabill[max];
-
+                // The display (6x7) 
                 for (int j = 0; j < 7; j++)
                 {
                     Console.Write($"{printed[0][j]}");
@@ -164,6 +183,8 @@ namespace Bankomaten
                 Thread.Sleep(400);
                 cash.Play();
 
+                // Checks how many times the display has been printed
+                // Then prints in correct order
                 if (printCheck == 5)
                 {
                     // A little surprise for the user!
@@ -219,20 +240,20 @@ namespace Bankomaten
             string pin = $"PIN: {pincodes[id]}";
             string ID = $"ID: {userIDs[id]}";
 
-            File.WriteAllText($"user{userIDs[id]}.txt", $"{ID}\n{name}\n{pin}\nAccounts\n");
+            File.WriteAllText($"user{userIDs[id]}.txt", $"{ID}\n{name}\n{pin}\nAccounts\n"); // writes static information first
 
-            for (int j = 0; j < userAccountCount[id]; j++)
+            for (int j = 0; j < userAccountCount[id]; j++) // then writes dynamic information (eg: there can be any number of accounts)
             {
-                File.AppendAllText($"user{userIDs[id]}.txt", $"{accountNames[j]}: {userSaldos[id][j]}\n");
+                File.AppendAllText($"user{userIDs[id]}.txt", $"{accountNames[j]}:{userSaldos[id][j]}:{accountCurrency[j]}\n");
             }
         }
 
         // Loads current user details
         static void Load(int id)
         {
-            string[] open = File.ReadAllLines($"user{userIDs[id]}.txt");
-
-            int accountRow = 0; 
+            string[] open = File.ReadAllLines($"user{userIDs[id]}.txt"); // reads the file, puts each line as a string
+                                                                         // in the array
+            int accountRow = 0;
 
             for (int i = 0; i < open.Length; i++) // Finding the row in the file where account info starts
             {
@@ -247,19 +268,31 @@ namespace Bankomaten
 
             for (int i = accountRow; i < open.Length; i++)
             {
-                string print = open[i].Substring(open[i].IndexOf(":") + 1); // gets numbers in file
-                decimal amount = Convert.ToDecimal(print);                    // Converts to double
-                temp[x] = amount;                                           // Puts money in correct account
-                int end = open[i].Length - print.Length - 1;                // Finds where account name in row ends
-                accountNames = ExpandStringArray(accountNames, open[i].Substring(0, end)); // Expands users accounts if needed.
+                int amountLength = open[i].LastIndexOf(":") - open[i].IndexOf(":") - 1;
+                string stringAmount = open[i].Substring(open[i].IndexOf(":") + 1, amountLength); // gets numbers in file
+                decimal amount = Convert.ToDecimal(stringAmount);                               // Converts to double
+                temp[x] = amount;                                                           // Puts money in correct account
+                int end = open[i].IndexOf(":");                                             // Finds where account name in row ends
+                string currency = open[i].Substring(open[i].LastIndexOf(":") + 1);          // Finds account currency
+
+                if (x >= accountNames.Length)                                               // Expands users accounts if needed.
+                {                                                                                //Otherwise enters value at correct index
+                    accountNames = ExpandStringArray(accountNames, open[i].Substring(0, end));
+                    accountCurrency = ExpandStringArray(accountCurrency, currency);
+                }
+                else
+                {
+                    accountCurrency[x] = currency;
+                    accountNames[x] = open[i].Substring(0, end);
+                }
                 x++;
             }
-            
+
             userSaldos[id] = temp;              // Loads user accounts into program array
             userAccountCount[id] = temp.Length; // Correct amount of accounts
         }
 
-        // A method that creates a new acount
+        // Creates a new acount
         static void CreateNewAccount(int id)
         {
             bool creating = true;
@@ -274,19 +307,37 @@ namespace Bankomaten
                 int choice = Choice(id, accountTypes.Length - 1);
                 string newName = accountTypes[choice];
 
-                if (userAccountCount[id] >= accountNames.Length)
+                if (userAccountCount[id] >= accountNames.Length) // Expanding arrays if necessary
                 {
                     accountNames = ExpandStringArray(accountNames, newName);
+                    accountCurrency = ExpandStringArray(accountCurrency, "");
                 }
                 else if (userAccountCount[id] < accountNames.Length)
                 {
                     accountNames[userAccountCount[id]] = newName;
                 }
                 userSaldos[id] = ExpandDecimalArray(userSaldos[id], 0);
+
+                if (newName == "International Account") // International accounts have to chose a currency
+                {
+
+                    Console.WriteLine("Vilken valuta vill du ha på ditt International Account?");
+                    for (int i = 1; i < currencyNames.Length; i++)
+                    {
+                        Console.WriteLine($"{i}. {currencyNames[i]} ({currencySymbol[i]})");
+                    }
+
+                    int valuta = Choice(activeUserID, currencyNames.Length - 1);
+                    accountCurrency[userAccountCount[id]] = currencyNames[valuta];
+
+                    Console.WriteLine($"\nDu skapade ett {newName} med {currencyNames[valuta]} som valuta.\n");
+                }
+                else
+                {
+                    Console.WriteLine($"\nDu skapade ett {newName}!\n");
+                }
+
                 userAccountCount[id]++;
-
-                Console.WriteLine($"\nDu skapade ett {newName}!\n");
-
                 creating = ReturnToMain("Tryck på valfri annan knapp för att skapa ytterligare konton.");
 
                 Console.Clear();
@@ -316,7 +367,7 @@ namespace Bankomaten
             temp[arr.Length + 1] = add;
 
             return temp;
-        }
+        } // not used, but in for flexibility
 
         static decimal[] ExpandDecimalArray(decimal[] arr, decimal add)
         {
@@ -328,7 +379,9 @@ namespace Bankomaten
 
             return temp;
         }
-         
+
+        // Withdrawing funds
+        // Contains several safeguards from illegal input
         static void WithdrawFunds(int id)
         {
             bool withdrawing = true;
@@ -337,81 +390,89 @@ namespace Bankomaten
 
             while (withdrawing)
             {
-                AccountDisplay(id);
+                AccountDisplay(id, false); // displaying accounts that can be withdrawn from (where currency is SEK)
                 Console.WriteLine("\nVälj ett konto att ta ut pengar ifrån (tryck på motsvarande siffra på tangentbordet): ");
 
                 from = Choice(id, userAccountCount[id] - 1);
 
-                    Console.WriteLine($"Du valde {accountNames[from]}\n");
-                    Console.WriteLine("Skriv in summa (du kan ta ut 100- 200- och 500-lappar: ");
-                    amount = NumberInput(true);
-                    Console.WriteLine("Bekräfta överföringen med din PIN-kod");
-                    int attempt = (int)NumberInput(false);
+                Console.WriteLine($"Du valde {accountNames[from]}\n");
+                Console.WriteLine("Skriv in summa (du kan ta ut pengar i sedlar från 100 SEK och uppåt: ");
+                amount = NumberInput(true);
+                Console.WriteLine("Bekräfta överföringen med din PIN-kod");
+                int attempt = (int)NumberInput(false);
 
-                    if (attempt != pincodes[id])
-                    {
-                        Console.Beep();
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\nFel PIN-kod!\n");
-                        Console.ResetColor();
-                        withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
-                    }
-                    else if (amount > userSaldos[id][from])
-                    {
-                        Console.Beep();
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\nDet finns inte tillräckligt med pengar på kontot!\n ");
-                        Console.ResetColor();
-                        withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
-                    }
-                    else if (userSaldos[id][from] == 0)
-                    {
-                        Console.Beep();
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\nKontot är tomt! \n");
-                        Console.ResetColor();
-                        withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
-                    }
-                    else if (amount == 0)
-                    {
-                        Console.Beep();
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\nDu kan inte föra över 0 kr!\n ");
-                        Console.ResetColor();
-                        withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
-                    }
-                    else if(amount % 100 != 0)
-                    {
+                if (attempt != pincodes[id]) // is pin correct?
+                {
+                    Console.Beep();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\nFel PIN-kod!\n");
+                    Console.ResetColor();
+                    withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
+                }
+                else if (accountNames[from] == "International Account") // is account international?
+                {
+                    Console.Beep();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\nDu kan inte ta ut pengar i andra valutor än SEK!\n ");
+                    Console.ResetColor();
+                    withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
+                }
+                else if (amount > userSaldos[id][from]) // is there enough money on sending account?
+                {
+                    Console.Beep();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\nDet finns inte tillräckligt med pengar på kontot!\n ");
+                    Console.ResetColor();
+                    withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
+                }
+                else if (userSaldos[id][from] == 0) // is sending account empty?
+                {
+                    Console.Beep();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\nKontot är tomt! \n");
+                    Console.ResetColor();
+                    withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
+                }
+                else if (amount == 0) // can't withdraw 0
+                {
+                    Console.Beep();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\nDu kan inte föra över 0 kr!\n ");
+                    Console.ResetColor();
+                    withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
+                }
+                else if (amount % 100 != 0) // can't withdraw coins from a cash machine obviously
+                {
                     Console.Beep();
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("\nDu måste ta ut en summa i hundralappar!\n ");
                     Console.ResetColor();
                     withdrawing = ReturnToMain("Klicka på valfri knapp för att prova igen.");
                 }
-                    else
-                    {
-                        // Removes the amount from the sending account
-                        // Then prints new balance, and the amount withdrawn
+                else
+                {
+                    // Removes the amount from the sending account
+                    // Then prints new balance, and the amount withdrawn
 
-                        userSaldos[id][from] -= amount;
+                    userSaldos[id][from] -= amount;
 
-                        Console.Clear();
-                        PrintMoney('$');
+                    Console.Clear();
+                    PrintMoney(' ');
 
-                        Console.WriteLine($"Nytt saldo på {accountNames[from]}: {userSaldos[id][from].ToString("C", CultureInfo.CurrentCulture)}");
-                        Console.ForegroundColor = ConsoleColor.DarkGreen;
-                        Console.WriteLine($"Ditt uttag: {amount.ToString("C", CultureInfo.CurrentCulture)}");
-                        Console.ResetColor();
-                        Save(id);
-                        withdrawing = ReturnToMain("Klicka på valfri knapp för att göra ett nytt uttag.");
-                    }
-                
+                    Console.WriteLine($"Nytt saldo på {accountNames[from]}: {userSaldos[id][from].ToString("C", CultureInfo.CurrentCulture)}");
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine($"Ditt uttag: {amount.ToString("C", CultureInfo.CurrentCulture)}");
+                    Console.ResetColor();
+                    Save(id);
+                    withdrawing = ReturnToMain("Klicka på valfri knapp för att göra ett nytt uttag.");
+                }
             }
         }
 
         // Viewing Accounts "shell", putting the actual display in another method
         // allows the program to show it in other methods without it asking to
         // return to the main menu at inopportune times :) 
+        // Could probably be removed, but is in for future flexibility
         static void ViewAccounts(int id)
         {
             Console.Clear();
@@ -419,7 +480,7 @@ namespace Bankomaten
             bool viewing = true;
             while (viewing)
             {
-                AccountDisplay(id);
+                AccountDisplay(id, true);
                 viewing = ReturnToMain("");
             }
             Console.Clear();
@@ -427,11 +488,13 @@ namespace Bankomaten
 
         // The actual displaying of the accounts and information is in this method
         // So it can be accessed from Transfer- and Withdrawal methods.
-        static void AccountDisplay(int id)
+        // Doesn't display international accounts if international is false
+        static void AccountDisplay(int id, bool international)
         {
             // Strings for formatting
             string divider = "    ---------------------------|------------------------";
             string space = "";
+
             Console.WriteLine("Dina konton:\n");
             Console.WriteLine($"{"    Konto",-27}{"Saldo",24}");
             Console.WriteLine(divider);
@@ -446,19 +509,40 @@ namespace Bankomaten
                 {
                     space = "";
                 }
-                
-                if (accountNames[i] == "International Account")
+
+                if (international && accountNames[i] == "International Account")
                 {
-                    CultureInfo brp = new CultureInfo("en-EN", false);
+                    CultureInfo brp;
+
+                    switch (accountCurrency[i])
+                    {
+                        case "Euro":
+                            brp = new CultureInfo("fi-FI", false);
+
+                            break;
+                        case "Dollar":
+                            brp = new CultureInfo("en-US", false);
+
+                            break;
+                        case "Pund":
+                            brp = new CultureInfo("en-GB", false);
+
+                            break;
+                        default:
+                            brp = CultureInfo.CurrentCulture;
+                            break;
+                    }
+
                     Console.WriteLine($"{i}.{space} {accountNames[i],-27}|{userSaldos[id][i].ToString("C", brp.NumberFormat),24}");
                     Console.WriteLine(divider);
                 }
-                else
+                else if (accountNames[i] != "International Account")
                 {
                     // using CultureInfo to display in SEK (or current)
                     Console.WriteLine($"{i}.{space} {accountNames[i],-27}|{userSaldos[id][i].ToString("C", CultureInfo.CurrentCulture),24}");
                     Console.WriteLine(divider);
                 }
+
 
             }
         }
@@ -471,7 +555,7 @@ namespace Bankomaten
         static bool ReturnToMain(string or)
         {
             string star = "";  // Formatting
-            if(or.Length > 1)   
+            if (or.Length > 1)
             {
                 star = "* ";
             }
@@ -523,12 +607,12 @@ namespace Bankomaten
                     // This while loops runs a number of times equal to number of max tries.
                     // After that, the LogIn function returns false.
 
-                    for(int i = 0; i <= maxPinTries; i++)
+                    for (int i = 0; i <= maxPinTries; i++)
                     {
                         Console.WriteLine("PIN-kod: ");
                         int pinEntry = (int)NumberInput(false);
 
-                        if(pinEntry == pincodes[activeUserID])
+                        if (pinEntry == pincodes[activeUserID])
                         {
                             Load(activeUserID);
                             Console.Clear();
@@ -558,10 +642,9 @@ namespace Bankomaten
         {
             ConsoleKeyInfo cki;
             bool menuOn = true;
-            
+
             while (menuOn)
             {
-                ConvertCurrency(1000, 1, 2);
                 Console.WriteLine("--- MENY ----\n");
                 Console.WriteLine("1. Se dina konton och saldo");
                 Console.WriteLine("2. Överföring mellan konton");
@@ -685,11 +768,10 @@ namespace Bankomaten
         }
 
         // A function that takes user id as input and returns an
-        // valid account "id" number, used in withdrawal and transactions.
+        // valid "id" number, used in single-key input.
         // takes a "max" input to make sure number returned is not too large.
         static int Choice(int id, int max)
         {
-            //int max = userAccountCount[id] - 1;
             bool isNumber;
             int num = 0;
             do
@@ -720,7 +802,7 @@ namespace Bankomaten
 
             while (transfering)
             {
-                AccountDisplay(id); // Displaying for easier access.
+                AccountDisplay(id, true); // Displaying for easier access.
 
                 Console.WriteLine("Skriv in från-konto: ");
                 from = Choice(id, userAccountCount[id] - 1);
@@ -756,13 +838,58 @@ namespace Bankomaten
                         Console.ResetColor();
                         transfering = ReturnToMain("Tryck på valfri annan knapp för att prova igen!");
                     }
-                    else // Makes the transaction, prints it, and asks if user wants to do it again or return to main menu.
+                    else // Converts the amount to receiving account currency,
+                         // prints it, and asks if user wants to do it again or return to main menu.
                     {
-                        userSaldos[id][from] -= amount;
-                        userSaldos[id][to] += amount;
 
-                        Console.WriteLine($"{accountNames[from]}: {userSaldos[id][from].ToString("C", CultureInfo.CurrentCulture)} (-{amount.ToString("C", CultureInfo.CurrentCulture)})");
-                        Console.WriteLine($"{accountNames[to]}: {userSaldos[id][to].ToString("C", CultureInfo.CurrentCulture)} (+{amount.ToString("C", CultureInfo.CurrentCulture)})\n");
+                        decimal convert = ConvertCurrency(amount, accountCurrency[from], accountCurrency[to]);
+
+                        userSaldos[id][from] -= amount;
+                        userSaldos[id][to] += convert;
+
+                        CultureInfo displayFrom;  // Checks sending and receiving acount currency
+                        CultureInfo displayTo;    // for displaying purposes
+
+                        switch (accountCurrency[from])
+                        {
+                            case "Euro":
+                                displayFrom = new CultureInfo("fi-FI", false);
+
+                                break;
+                            case "Dollar":
+                                displayFrom = new CultureInfo("en-US", false);
+
+                                break;
+                            case "Pund":
+                                displayFrom = new CultureInfo("en-GB", false);
+
+                                break;
+                            default:
+                                displayFrom = CultureInfo.CurrentCulture;
+                                break;
+                        }
+
+                        switch (accountCurrency[to])
+                        {
+                            case "Euro":
+                                displayTo = new CultureInfo("fi-FI", false);
+
+                                break;
+                            case "Dollar":
+                                displayTo = new CultureInfo("en-US", false);
+
+                                break;
+                            case "Pund":
+                                displayTo = new CultureInfo("en-GB", false);
+
+                                break;
+                            default:
+                                displayTo = CultureInfo.CurrentCulture;
+                                break;
+                        }
+
+                        Console.WriteLine($"{accountNames[from]}: {userSaldos[id][from].ToString("C", displayFrom.NumberFormat)} (-{amount.ToString("C", displayFrom.NumberFormat)})");
+                        Console.WriteLine($"{accountNames[to]}: {userSaldos[id][to].ToString("C", displayTo.NumberFormat)} (+{convert.ToString("C", displayTo.NumberFormat)})\n");
 
                         Save(id);
                         transfering = ReturnToMain("Tryck på valfri annan knapp för att göra en ny överföring.");
@@ -778,10 +905,16 @@ namespace Bankomaten
         public static extern int mciSendStringA(string lpstrCommand, string lpstrReturnString,
                                                 int uReturnLength, int hwndCallback);
 
-        static decimal ConvertCurrency(decimal number, int from, int to)
+        // Converts currency from one to another (first to SEK if necessary to be able
+        // to use the conversion rates array)
+        static decimal ConvertCurrency(decimal number, string from, string to)
         {
-            number = number * conversionRates[from];
-            decimal conv = number / conversionRates[to];
+
+            number = number * conversionRates[Array.IndexOf(currencyNames, from)];
+
+            decimal conv = number / conversionRates[Array.IndexOf(currencyNames, to)];
+
+            Console.WriteLine($"Converted from {from} to {to} = {conv}");
 
             return conv;
         }
