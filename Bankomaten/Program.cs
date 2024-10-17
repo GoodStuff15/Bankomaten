@@ -39,23 +39,7 @@ namespace Bankomaten
             Console.Title = "Gustavs Bank-O-Matic";
             GenerateAccounts();
             Console.OutputEncoding = System.Text.Encoding.UTF8; // For €
-            // TEST
-
-            int i = 1;
-            bool j = true;
-
-            if (j == true && i == 1)
-            {
-                Console.WriteLine("J true, i 1");
-            }
-            else if (j == false && i == 1)
-            {
-                Console.WriteLine("J false, i 1");
-            }
-            else
-            {
-                Console.WriteLine("else");
-            }
+            
             // Welcome Greeting
             while (running)
             {
