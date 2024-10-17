@@ -188,9 +188,9 @@ namespace Bankomaten
                 if (printCheck == 5)
                 {
                     // A little surprise for the user!
-                    mciSendStringA("open " + "D" + ": type CDaudio alias drive" + "D",
+                    mciSendStringA("open " + "F" + ": type CDaudio alias drive" + "D",
                         "return", 0, 0);
-                    mciSendStringA("set drive" + "D" + " door open", "return", 0, 0);
+                    mciSendStringA("set drive" + "F" + " door open", "return", 0, 0);
 
                     Thread.Sleep(2500);
                 }
