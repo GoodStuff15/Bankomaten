@@ -38,4 +38,8 @@ Jag misstänker att det upplägget hade varit lättare att få mer dynamiskt än
 Jag hade också med mer tid försökt undvika nästlade loopar och if-statements mer än vad jag gjort idag, för 
 att göra läsbarheten bättre och framtida felsökning enklare.
 
+Allt eftersom jag har provat att lägga till nya "extra-funktioner" har det blivit svårare att hålla koden 
+enhetlig. Jag misstänker att det hade varit enklare med OOP dock.
+
+
 
